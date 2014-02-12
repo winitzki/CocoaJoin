@@ -1,0 +1,527 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		CEA83A3A18AAAF8E00E5B143 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3918AAAF8E00E5B143 /* Foundation.framework */; };
+		CEA83A3C18AAAF8E00E5B143 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3B18AAAF8E00E5B143 /* CoreGraphics.framework */; };
+		CEA83A3E18AAAF8E00E5B143 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3D18AAAF8E00E5B143 /* UIKit.framework */; };
+		CEA83A4418AAAF8E00E5B143 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CEA83A4218AAAF8E00E5B143 /* InfoPlist.strings */; };
+		CEA83A4618AAAF8E00E5B143 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A4518AAAF8E00E5B143 /* main.m */; };
+		CEA83A4A18AAAF8F00E5B143 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A4918AAAF8F00E5B143 /* AppDelegate.m */; };
+		CEA83A4C18AAAF8F00E5B143 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CEA83A4B18AAAF8F00E5B143 /* Images.xcassets */; };
+		CEA83A5318AAAF9000E5B143 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A5218AAAF9000E5B143 /* XCTest.framework */; };
+		CEA83A5418AAAF9000E5B143 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3918AAAF8E00E5B143 /* Foundation.framework */; };
+		CEA83A5518AAAF9000E5B143 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3D18AAAF8E00E5B143 /* UIKit.framework */; };
+		CEA83A5D18AAAF9000E5B143 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CEA83A5B18AAAF9000E5B143 /* InfoPlist.strings */; };
+		CEA83A5F18AAAF9000E5B143 /* DinPhil5Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A5E18AAAF9000E5B143 /* DinPhil5Tests.m */; };
+		CEA83A7118AAB0F400E5B143 /* CJoin.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6A18AAB0F400E5B143 /* CJoin.m */; };
+		CEA83A7218AAB0F400E5B143 /* NSNumber+lowercaseTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6C18AAB0F400E5B143 /* NSNumber+lowercaseTypes.m */; };
+		CEA83A7318AAB0F400E5B143 /* WeakRef.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6E18AAB0F400E5B143 /* WeakRef.m */; };
+		CEA83A7418AAB0F400E5B143 /* NSPair.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6F18AAB0F400E5B143 /* NSPair.m */; };
+		CEA83A7B18AAB10200E5B143 /* DiningPhilosophicalLogic.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A7618AAB10200E5B143 /* DiningPhilosophicalLogic.m */; };
+		CEA83A7C18AAB10200E5B143 /* DinPhilVCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A7718AAB10200E5B143 /* DinPhilVCViewController.m */; };
+		CEA83A7D18AAB10200E5B143 /* DinPhilVCViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CEA83A7818AAB10200E5B143 /* DinPhilVCViewController.xib */; };
+		CEA83A7E18AAB10200E5B143 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CEA83A7918AAB10200E5B143 /* MainWindow.xib */; };
+		CEA83A8118AAB33E00E5B143 /* NSArray+OVRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A8018AAB33E00E5B143 /* NSArray+OVRandom.m */; };
+		CEA83A8318AAB5E400E5B143 /* CJoinTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A8218AAB5E300E5B143 /* CJoinTests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		CEA83A5618AAAF9000E5B143 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CEA83A2E18AAAF8E00E5B143 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CEA83A3518AAAF8E00E5B143;
+			remoteInfo = DinPhil5;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		CEA83A3618AAAF8E00E5B143 /* DinPhil5.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DinPhil5.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CEA83A3918AAAF8E00E5B143 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		CEA83A3B18AAAF8E00E5B143 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		CEA83A3D18AAAF8E00E5B143 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		CEA83A4118AAAF8E00E5B143 /* DinPhil5-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DinPhil5-Info.plist"; sourceTree = "<group>"; };
+		CEA83A4318AAAF8E00E5B143 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		CEA83A4518AAAF8E00E5B143 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		CEA83A4718AAAF8F00E5B143 /* DinPhil5-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DinPhil5-Prefix.pch"; sourceTree = "<group>"; };
+		CEA83A4818AAAF8F00E5B143 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		CEA83A4918AAAF8F00E5B143 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		CEA83A4B18AAAF8F00E5B143 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		CEA83A5118AAAF9000E5B143 /* DinPhil5Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DinPhil5Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CEA83A5218AAAF9000E5B143 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		CEA83A5A18AAAF9000E5B143 /* DinPhil5Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DinPhil5Tests-Info.plist"; sourceTree = "<group>"; };
+		CEA83A5C18AAAF9000E5B143 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		CEA83A5E18AAAF9000E5B143 /* DinPhil5Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DinPhil5Tests.m; sourceTree = "<group>"; };
+		CEA83A6918AAB0F400E5B143 /* CJoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJoin.h; sourceTree = "<group>"; };
+		CEA83A6A18AAB0F400E5B143 /* CJoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJoin.m; sourceTree = "<group>"; };
+		CEA83A6B18AAB0F400E5B143 /* NSNumber+lowercaseTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSNumber+lowercaseTypes.h"; sourceTree = "<group>"; };
+		CEA83A6C18AAB0F400E5B143 /* NSNumber+lowercaseTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+lowercaseTypes.m"; sourceTree = "<group>"; };
+		CEA83A6D18AAB0F400E5B143 /* WeakRef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WeakRef.h; sourceTree = "<group>"; };
+		CEA83A6E18AAB0F400E5B143 /* WeakRef.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WeakRef.m; sourceTree = "<group>"; };
+		CEA83A6F18AAB0F400E5B143 /* NSPair.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPair.m; sourceTree = "<group>"; };
+		CEA83A7018AAB0F400E5B143 /* NSPair.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPair.h; sourceTree = "<group>"; };
+		CEA83A7518AAB10200E5B143 /* DiningPhilosophicalLogic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DiningPhilosophicalLogic.h; sourceTree = "<group>"; };
+		CEA83A7618AAB10200E5B143 /* DiningPhilosophicalLogic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DiningPhilosophicalLogic.m; sourceTree = "<group>"; };
+		CEA83A7718AAB10200E5B143 /* DinPhilVCViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DinPhilVCViewController.m; sourceTree = "<group>"; };
+		CEA83A7818AAB10200E5B143 /* DinPhilVCViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DinPhilVCViewController.xib; sourceTree = "<group>"; };
+		CEA83A7918AAB10200E5B143 /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
+		CEA83A7A18AAB10200E5B143 /* DinPhilVCViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DinPhilVCViewController.h; sourceTree = "<group>"; };
+		CEA83A7F18AAB33E00E5B143 /* NSArray+OVRandom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+OVRandom.h"; sourceTree = "<group>"; };
+		CEA83A8018AAB33E00E5B143 /* NSArray+OVRandom.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+OVRandom.m"; sourceTree = "<group>"; };
+		CEA83A8218AAB5E300E5B143 /* CJoinTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJoinTests.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		CEA83A3318AAAF8E00E5B143 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CEA83A3C18AAAF8E00E5B143 /* CoreGraphics.framework in Frameworks */,
+				CEA83A3E18AAAF8E00E5B143 /* UIKit.framework in Frameworks */,
+				CEA83A3A18AAAF8E00E5B143 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CEA83A4E18AAAF9000E5B143 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CEA83A5318AAAF9000E5B143 /* XCTest.framework in Frameworks */,
+				CEA83A5518AAAF9000E5B143 /* UIKit.framework in Frameworks */,
+				CEA83A5418AAAF9000E5B143 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		CEA83A2D18AAAF8E00E5B143 = {
+			isa = PBXGroup;
+			children = (
+				CEA83A6818AAB0BE00E5B143 /* CocoaJoin */,
+				CEA83A3F18AAAF8E00E5B143 /* DinPhil5 */,
+				CEA83A5818AAAF9000E5B143 /* DinPhil5Tests */,
+				CEA83A3818AAAF8E00E5B143 /* Frameworks */,
+				CEA83A3718AAAF8E00E5B143 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CEA83A3718AAAF8E00E5B143 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CEA83A3618AAAF8E00E5B143 /* DinPhil5.app */,
+				CEA83A5118AAAF9000E5B143 /* DinPhil5Tests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CEA83A3818AAAF8E00E5B143 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CEA83A3918AAAF8E00E5B143 /* Foundation.framework */,
+				CEA83A3B18AAAF8E00E5B143 /* CoreGraphics.framework */,
+				CEA83A3D18AAAF8E00E5B143 /* UIKit.framework */,
+				CEA83A5218AAAF9000E5B143 /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		CEA83A3F18AAAF8E00E5B143 /* DinPhil5 */ = {
+			isa = PBXGroup;
+			children = (
+				CEA83A7518AAB10200E5B143 /* DiningPhilosophicalLogic.h */,
+				CEA83A7618AAB10200E5B143 /* DiningPhilosophicalLogic.m */,
+				CEA83A7718AAB10200E5B143 /* DinPhilVCViewController.m */,
+				CEA83A7818AAB10200E5B143 /* DinPhilVCViewController.xib */,
+				CEA83A7918AAB10200E5B143 /* MainWindow.xib */,
+				CEA83A7A18AAB10200E5B143 /* DinPhilVCViewController.h */,
+				CEA83A4818AAAF8F00E5B143 /* AppDelegate.h */,
+				CEA83A4918AAAF8F00E5B143 /* AppDelegate.m */,
+				CEA83A4B18AAAF8F00E5B143 /* Images.xcassets */,
+				CEA83A4018AAAF8E00E5B143 /* Supporting Files */,
+			);
+			path = DinPhil5;
+			sourceTree = "<group>";
+		};
+		CEA83A4018AAAF8E00E5B143 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				CEA83A4118AAAF8E00E5B143 /* DinPhil5-Info.plist */,
+				CEA83A4218AAAF8E00E5B143 /* InfoPlist.strings */,
+				CEA83A4518AAAF8E00E5B143 /* main.m */,
+				CEA83A4718AAAF8F00E5B143 /* DinPhil5-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		CEA83A5818AAAF9000E5B143 /* DinPhil5Tests */ = {
+			isa = PBXGroup;
+			children = (
+				CEA83A8218AAB5E300E5B143 /* CJoinTests.m */,
+				CEA83A5E18AAAF9000E5B143 /* DinPhil5Tests.m */,
+				CEA83A5918AAAF9000E5B143 /* Supporting Files */,
+			);
+			path = DinPhil5Tests;
+			sourceTree = "<group>";
+		};
+		CEA83A5918AAAF9000E5B143 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				CEA83A5A18AAAF9000E5B143 /* DinPhil5Tests-Info.plist */,
+				CEA83A5B18AAAF9000E5B143 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		CEA83A6818AAB0BE00E5B143 /* CocoaJoin */ = {
+			isa = PBXGroup;
+			children = (
+				CEA83A7F18AAB33E00E5B143 /* NSArray+OVRandom.h */,
+				CEA83A8018AAB33E00E5B143 /* NSArray+OVRandom.m */,
+				CEA83A6918AAB0F400E5B143 /* CJoin.h */,
+				CEA83A6A18AAB0F400E5B143 /* CJoin.m */,
+				CEA83A6B18AAB0F400E5B143 /* NSNumber+lowercaseTypes.h */,
+				CEA83A6C18AAB0F400E5B143 /* NSNumber+lowercaseTypes.m */,
+				CEA83A6D18AAB0F400E5B143 /* WeakRef.h */,
+				CEA83A6E18AAB0F400E5B143 /* WeakRef.m */,
+				CEA83A6F18AAB0F400E5B143 /* NSPair.m */,
+				CEA83A7018AAB0F400E5B143 /* NSPair.h */,
+			);
+			path = CocoaJoin;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CEA83A3518AAAF8E00E5B143 /* DinPhil5 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CEA83A6218AAAF9000E5B143 /* Build configuration list for PBXNativeTarget "DinPhil5" */;
+			buildPhases = (
+				CEA83A3218AAAF8E00E5B143 /* Sources */,
+				CEA83A3318AAAF8E00E5B143 /* Frameworks */,
+				CEA83A3418AAAF8E00E5B143 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DinPhil5;
+			productName = DinPhil5;
+			productReference = CEA83A3618AAAF8E00E5B143 /* DinPhil5.app */;
+			productType = "com.apple.product-type.application";
+		};
+		CEA83A5018AAAF9000E5B143 /* DinPhil5Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CEA83A6518AAAF9000E5B143 /* Build configuration list for PBXNativeTarget "DinPhil5Tests" */;
+			buildPhases = (
+				CEA83A4D18AAAF9000E5B143 /* Sources */,
+				CEA83A4E18AAAF9000E5B143 /* Frameworks */,
+				CEA83A4F18AAAF9000E5B143 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CEA83A5718AAAF9000E5B143 /* PBXTargetDependency */,
+			);
+			name = DinPhil5Tests;
+			productName = DinPhil5Tests;
+			productReference = CEA83A5118AAAF9000E5B143 /* DinPhil5Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CEA83A2E18AAAF8E00E5B143 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0500;
+				ORGANIZATIONNAME = "Sergei Winitzki";
+				TargetAttributes = {
+					CEA83A3518AAAF8E00E5B143 = {
+						DevelopmentTeam = J5CPW73CNB;
+					};
+					CEA83A5018AAAF9000E5B143 = {
+						TestTargetID = CEA83A3518AAAF8E00E5B143;
+					};
+				};
+			};
+			buildConfigurationList = CEA83A3118AAAF8E00E5B143 /* Build configuration list for PBXProject "DinPhil5" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = CEA83A2D18AAAF8E00E5B143;
+			productRefGroup = CEA83A3718AAAF8E00E5B143 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CEA83A3518AAAF8E00E5B143 /* DinPhil5 */,
+				CEA83A5018AAAF9000E5B143 /* DinPhil5Tests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CEA83A3418AAAF8E00E5B143 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CEA83A7E18AAB10200E5B143 /* MainWindow.xib in Resources */,
+				CEA83A4418AAAF8E00E5B143 /* InfoPlist.strings in Resources */,
+				CEA83A4C18AAAF8F00E5B143 /* Images.xcassets in Resources */,
+				CEA83A7D18AAB10200E5B143 /* DinPhilVCViewController.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CEA83A4F18AAAF9000E5B143 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CEA83A5D18AAAF9000E5B143 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CEA83A3218AAAF8E00E5B143 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CEA83A7118AAB0F400E5B143 /* CJoin.m in Sources */,
+				CEA83A8118AAB33E00E5B143 /* NSArray+OVRandom.m in Sources */,
+				CEA83A4A18AAAF8F00E5B143 /* AppDelegate.m in Sources */,
+				CEA83A7418AAB0F400E5B143 /* NSPair.m in Sources */,
+				CEA83A4618AAAF8E00E5B143 /* main.m in Sources */,
+				CEA83A7C18AAB10200E5B143 /* DinPhilVCViewController.m in Sources */,
+				CEA83A7B18AAB10200E5B143 /* DiningPhilosophicalLogic.m in Sources */,
+				CEA83A7218AAB0F400E5B143 /* NSNumber+lowercaseTypes.m in Sources */,
+				CEA83A7318AAB0F400E5B143 /* WeakRef.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CEA83A4D18AAAF9000E5B143 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CEA83A5F18AAAF9000E5B143 /* DinPhil5Tests.m in Sources */,
+				CEA83A8318AAB5E400E5B143 /* CJoinTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		CEA83A5718AAAF9000E5B143 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CEA83A3518AAAF8E00E5B143 /* DinPhil5 */;
+			targetProxy = CEA83A5618AAAF9000E5B143 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		CEA83A4218AAAF8E00E5B143 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				CEA83A4318AAAF8E00E5B143 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		CEA83A5B18AAAF9000E5B143 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				CEA83A5C18AAAF9000E5B143 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		CEA83A6018AAAF9000E5B143 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CEA83A6118AAAF9000E5B143 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		CEA83A6318AAAF9000E5B143 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DinPhil5/DinPhil5-Prefix.pch";
+				INFOPLIST_FILE = "DinPhil5/DinPhil5-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		CEA83A6418AAAF9000E5B143 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DinPhil5/DinPhil5-Prefix.pch";
+				INFOPLIST_FILE = "DinPhil5/DinPhil5-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		CEA83A6618AAAF9000E5B143 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/DinPhil5.app/DinPhil5";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DinPhil5/DinPhil5-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "DinPhil5Tests/DinPhil5Tests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		CEA83A6718AAAF9000E5B143 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/DinPhil5.app/DinPhil5";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DinPhil5/DinPhil5-Prefix.pch";
+				INFOPLIST_FILE = "DinPhil5Tests/DinPhil5Tests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CEA83A3118AAAF8E00E5B143 /* Build configuration list for PBXProject "DinPhil5" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CEA83A6018AAAF9000E5B143 /* Debug */,
+				CEA83A6118AAAF9000E5B143 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CEA83A6218AAAF9000E5B143 /* Build configuration list for PBXNativeTarget "DinPhil5" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CEA83A6318AAAF9000E5B143 /* Debug */,
+				CEA83A6418AAAF9000E5B143 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		CEA83A6518AAAF9000E5B143 /* Build configuration list for PBXNativeTarget "DinPhil5Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CEA83A6618AAAF9000E5B143 /* Debug */,
+				CEA83A6718AAAF9000E5B143 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = CEA83A2E18AAAF8E00E5B143 /* Project object */;
+}
