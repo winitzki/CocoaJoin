@@ -195,7 +195,7 @@ Available classes:
 
 Other types of this form: `CjR_`_t_`_`_r_  represents a name of a fast molecule carrying value of type _t_ returning a value of type _r_. In ordinary join calculus, this type would be a function _t_ -> _r_.
 
-* The syntax of molecule injection is not `a(x)` or `b()` but [a put:x] and [b put].
+* The syntax of molecule injection is not `a(x)` or `b()` but `[a put:x]` and `[b put]`.
 * The syntax of `reply` is `[f reply:x]` or `[f reply]`, where `f` must be a fast molecule. (Otherwise, there will be a compile-time error, since the `reply` method is only defined for fast molecules.)
 * It is not possible to make two join definitions one after another in the same local scope.
 * To make a new join definition, each new molecule name must be defined with its explicit type.
@@ -210,12 +210,12 @@ This is so because the definition of an input name is equivalent in Objective-C 
 
 If the name `counter` is already locally defined, it is a compile-time error to define the same name again in the same scope. No error will result if the name is redefined within another local scope.
 
-* A join definition is represented by an object of class CJoin.
+* A join definition is represented by an object of class `CJoin` (the "join object").
 
-The join object is not visible directly, but it has initialized its job queue and is ready to accept any injected molecules known to it, i.e. any of its input molecules. When the join object is destroyed, it also destroys the queue it has created.
+The join object is not visible directly. After performing a join definition, the join object initializes its job queue and is ready to accept any injected molecules known to it, i.e. any of its input molecules. When the join object is destroyed, it also destroys the queue it has created.
      
 Each molecule name carries a strong reference to the join object to which it belongs, and there are no other references to the join object. Once you destroy the last molecule name that uses the join object, the join is gone.
-     
+
 Together with the join object, the molecule names are created in the local scope, and their reactions have been defined and stored in the join object.
 
 * A reaction may be designated for the "UI thread".
@@ -286,7 +286,7 @@ Define a new reaction:
 
 Similar macros `cjReact3`, `cjReact3UI`, `cjReact4`, and `cjReact4UI` are available. Further such macros are straightforward to implement. (See `CJoin.h`.)
 
-The `UI` versions of the macros define reactions that are designated for the UI thread.
+The "UI" versions of the macros define reactions that are designated for the UI thread.
 
 Here is an example of using the reaction macros.  To convert the pseudocode such as
 
@@ -299,6 +299,8 @@ into a macro call, we need to specify the names of the input molecules (`a`, `b`
 	})
 
 Here we have put the reaction body into its own block for visual clarity, but this is not necessary. Also, it is optional whether to inject the molecules with the comma operator or through separate statements `[a put:x+y]; [c put];`. The reaction block returns nothing.
+
+Note that we have used the name `dummy` for the argument of the empty type. This is necessary for technical reasons (the CPP macros are insufficiently powerful here). We are required to specify names for all arguments, even if the value is empty. So the reaction body will see a local variable named `dummy` with value equal to `[NSNull null]`.
 
 The `reply` operator:
 - reply with value `val` to a fast molecule named `name`
