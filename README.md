@@ -51,9 +51,11 @@ Reactions do not _have_ to inject any output molecules. If a reaction does not i
 The reaction is written as a pure function that takes each input molecule's value as an argument. For now, we will write reactions using pseudocode with keywords such as `consume`, `inject`, etc. These keywords are used here just for clarity; they do not correspond to any implementation of join calculus.
 
 For instance, consider the reaction
+
 	consume a(x), b(y) => 
 		let r = compute_whatever(x,y) in
 		inject c(r),a(x),a(y),a(22); // whatever
+
 This reaction takes `x` and `y` as arguments and computes a function, then injects some new molecules back into the soup.
 
 The input molecules of a reaction must be _all different_, and the argument names must be all different. It is not allowed to have a reaction such as
@@ -182,6 +184,7 @@ CocoaJoin modifies the model of join calculus in some inessential ways:
 * Molecule names are local values of certain predefined classes such as `CjR_int`, `CjR_empty`, `CjR_id_id`, etc., depending on the types of values. (Fully constructed molecules are not available as objects, as in JoCaml.)
 
 Available classes:
+
 	CjR_A -- abstract parent class of all molecule names (fast or slow)
 	CjS_A -- abstract parent class of all fast molecule names
 	CjR_empty -- name of a slow molecule with empty value, inc()
@@ -189,6 +192,7 @@ Available classes:
 	CjR_int -- name of a slow molecule with int value
 	CjR_float -- name of a slow molecule with float value
 	CjR_empty_empty -- name of a fast molecule with empty value, returning empty
+
 Other types of this form: `CjR_`_t_`_`_r_  represents a name of a fast molecule carrying value of type _t_ returning a value of type _r_. In ordinary join calculus, this type would be a function _t_ -> _r_.
 
 * The syntax of molecule injection is not `a(x)` or `b()` but [a put:x] and [b put].
@@ -246,9 +250,12 @@ Available macros
 
 Make a local join definition:
 - a join definition with decision code on a background thread
-	cjDef(...)
+
+`cjDef(...)`
+
 - a join definition with decision code on the UI thread
-	cjDefUI(...)
+	
+`cjDefUI(...)`
 
 What goes inside the `cjDef` macro:
 - definitions of names and types for all new input molecules using `cjAsync` or `cjSync`
@@ -256,10 +263,13 @@ What goes inside the `cjDef` macro:
 
 Define a new input molecule name:
 
-- slow molecule with value of type t
-	cjAsync(name, t)
-- fast molecule with value of type tin, returning value of type tout
-	cjSync(tout, name, tin)
+- slow molecule with value of type `t`
+
+`cjAsync(name, t)`
+
+- fast molecule with value of type `tin`, returning value of type `tout`
+
+`cjSync(tout, name, tin)`
 
 Define a new reaction:
 
@@ -292,7 +302,8 @@ Here we have put the reaction body into its own block for visual clarity, but th
 
 The `reply` operator:
 - reply with value `val` to a fast molecule named `name`
-	cjReply(name, val)
+
+`cjReply(name, val)`
 
 The `reply` operator, as well as injections of known molecules, can be used anywhere in the reaction block.
 
