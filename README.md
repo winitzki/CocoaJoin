@@ -168,7 +168,7 @@ Due to this feature, local reactions are encapsulated and can be safely used fro
 Example 2: map/reduce
 ---------------------
 
-"Map": We need to schedule `n` computational tasks `task(x)` concurrently on each element `x` of a collection `C`. "Reduce": as soon as each task is finished, we need to collect the intermediate results and merge them repeatedly together with the function `reduce(a,b)` in order to compute the final value.
+"Map": We need to schedule `n` computational tasks `compute_something(x)` concurrently on each element `x` of a collection `C`. "Reduce": as soon as each task is finished, we need to collect the intermediate results and merge them repeatedly together with the function `reduce(a,b)` in order to compute the final value.
 
 We assume that the reducer is associative: 
 
@@ -176,7 +176,18 @@ We assume that the reducer is associative:
 
 So it is correct to reduce the intermediate results in any order and even concurrently, as long as no intermediate value is lost.
 
-We design the "chemistry" as follows.
+We design the "chemistry" as follows:
+
+- each task is initiated by a molecule `begin(x)` by itself
+- when the computation is finished, a molecule `done(result)` is injected, carrying the result value of the computation
+
+		consume begin(x) =>  inject done(result), where result = compute_something(x) 
+
+- ideally we would like to define the "reduce" reaction like this:
+
+		consume done(x), done(y) => inject done(z), where z = reduce(x,y)
+
+If this were possible, we would achieve the result that all reducing operations start concurrently. However, we are not allowed to define reactions that consume two copies of the same molecule. We need to define additional auxiliary reactions ... (to be continued)
 
 Summary of features of join calculus
 ------------------------------------
