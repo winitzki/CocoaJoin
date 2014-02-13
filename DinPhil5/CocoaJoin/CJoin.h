@@ -9,32 +9,64 @@
 @class CJoin;
 
 typedef NSNull *empty;
-typedef NSNull *empty_empty;
-typedef NSNull *empty_id;
-typedef NSNull *empty_int;
+
+#define _cjMkSimpleE(t) typedef NSNull* empty_##t;
+_cjMkSimpleE(empty)
+_cjMkSimpleE(id)
+_cjMkSimpleE(int)
+_cjMkSimpleE(float)
+
+#define _cjMkSimpleT(s,t) typedef s s##_##t;
+_cjMkSimpleT(id,empty)
+_cjMkSimpleT(id,id)
+_cjMkSimpleT(id,int)
+_cjMkSimpleT(id,float)
+_cjMkSimpleT(int,empty)
+_cjMkSimpleT(int,id)
+_cjMkSimpleT(int,int)
+_cjMkSimpleT(int,float)
+_cjMkSimpleT(float,empty)
+_cjMkSimpleT(float,id)
+_cjMkSimpleT(float,int)
+_cjMkSimpleT(float,float)
 
 typedef void (^CjM_empty)(void);
-typedef void(^CjM_int)(int);
-typedef int (^CjM_empty_int)(void);
 
-#define _cjMkProt(t) \
-@protocol CjM_##t \
-- (t) value; \
-@end
-#define _cjMkSProt(s,t) \
-@protocol CjM_##s##_##t \
-- (s) value; \
-@end
+#define _cjMkTypedef(t) \
+typedef void(^CjM_##t)(t);
 
-_cjMkProt(empty)
-_cjMkProt(id)
-_cjMkProt(int)
-_cjMkProt(float)
+_cjMkTypedef(id)
+_cjMkTypedef(int)
+_cjMkTypedef(float)
 
-_cjMkSProt(empty,int)
-_cjMkSProt(id,id)
-_cjMkSProt(int,empty)
-_cjMkSProt(id,float)
+typedef void(^CjM_empty_empty)(void);
+
+#define _cjMkTypedefE(t) \
+typedef t (^CjM_empty_##t)(void);
+
+_cjMkTypedefE(id)
+_cjMkTypedefE(int)
+_cjMkTypedefE(float)
+
+#define _cjMkTypedefTE(t) \
+typedef void (^CjM_##t##_empty)(t);
+
+_cjMkTypedefTE(id)
+_cjMkTypedefTE(int)
+_cjMkTypedefTE(float)
+
+#define _cjMkTypedefS(s,t) typedef t (^CjM_##s##_##t)(s);
+
+_cjMkTypedefS(id, id)
+_cjMkTypedefS(id, int)
+_cjMkTypedefS(id, float)
+_cjMkTypedefS(int, id)
+_cjMkTypedefS(int, int)
+_cjMkTypedefS(int, float)
+_cjMkTypedefS(float, id)
+_cjMkTypedefS(float, int)
+_cjMkTypedefS(float, float)
+
 // more to come
 
 /// convenience type name for priorities used in GCD dispatch queues
