@@ -16,6 +16,7 @@ typedef NSNull *empty_int;
 
 @class CJoin;
 
+/// convenience type name for priorities used in GCD dispatch queues
 typedef enum {
     High = DISPATCH_QUEUE_PRIORITY_HIGH,
     Default = DISPATCH_QUEUE_PRIORITY_DEFAULT,
@@ -23,6 +24,7 @@ typedef enum {
     LowestBackground = DISPATCH_QUEUE_PRIORITY_BACKGROUND}
 ReactionPriority;
 
+/// Abstract class representing a molecule name. Its subclasses represent molecule names with specific types of values.
 @interface CjR_A : NSObject
 + (instancetype)name:(NSString *)name join:(CJoin *)join;
 @end
