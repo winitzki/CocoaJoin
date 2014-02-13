@@ -273,13 +273,17 @@ Define a new input molecule name:
 
 Define a new reaction:
 
+- reactions taking a single input molecule:
+
 	cjReact1(name1, type1, var1, code...)
 	cjReact1UI(name1, type1, var1, code...)
 
 `name1` must be a newly defined molecule name (value will be created in local scope).
-`type1` is the type of the value of that molecule.
+`type1` is the type of the value of that molecule. For fast molecules, separate type with underscore: for example, `empty_int` or `id_id`.
 `var1` is the name of the formal parameter bound to the value of that molecule within the reaction body.
 `code` is the body of the reaction; this may use the locally defined names `name1` and `var1`.
+
+- reactions taking two input molecules:
 
 	cjReact2(name1, type1, var1, name2, type2, var2, code...)
 	cjReact2UI(name1, type1, var1, name2, type2, var2, code...)
