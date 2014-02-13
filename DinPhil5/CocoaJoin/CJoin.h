@@ -5,16 +5,37 @@
 
 #import <Foundation/Foundation.h>
 
-// quick prototype:
-// - support only two types for event values: empty and int
-// - support only reactions with two input molecules
+
+@class CJoin;
 
 typedef NSNull *empty;
 typedef NSNull *empty_empty;
 typedef NSNull *empty_id;
 typedef NSNull *empty_int;
 
-@class CJoin;
+typedef void (^CjM_empty)(void);
+typedef void(^CjM_int)(int);
+typedef int (^CjM_empty_int)(void);
+
+#define _cjMkProt(t) \
+@protocol CjM_##t \
+- (t) value; \
+@end
+#define _cjMkSProt(s,t) \
+@protocol CjM_##s##_##t \
+- (s) value; \
+@end
+
+_cjMkProt(empty)
+_cjMkProt(id)
+_cjMkProt(int)
+_cjMkProt(float)
+
+_cjMkSProt(empty,int)
+_cjMkSProt(id,id)
+_cjMkSProt(int,empty)
+_cjMkSProt(id,float)
+// more to come
 
 /// convenience type name for priorities used in GCD dispatch queues
 typedef enum {
@@ -24,7 +45,7 @@ typedef enum {
     LowestBackground = DISPATCH_QUEUE_PRIORITY_BACKGROUND}
 ReactionPriority;
 
-/// Abstract class representing a molecule name. Its subclasses represent molecule names with specific types of values.
+/// Abstract class representing a fully constructed molecule name. Its subclasses represent molecule names with specific types of values.
 @interface CjR_A : NSObject
 + (instancetype)name:(NSString *)name join:(CJoin *)join;
 @end
@@ -86,8 +107,23 @@ typedef void(^ReactionPayload)(NSArray *inputs);
 
 @interface CJoin : NSObject
 + (instancetype) joinOnMainThread:(BOOL)onMainThread reactionPriority:(ReactionPriority)priority;
-- (void) defineReactionWithInputs:(NSArray *)inputs payload:(ReactionPayload)payload runOnMainThread:(BOOL)onMainThread;
+- (void) defineReactionWithInputNames:(NSArray *)inputs payload:(ReactionPayload)payload runOnMainThread:(BOOL)onMainThread;
 + (void) stopAndThen:(void (^)(void))continuation;
+
+- (void) emptyPutName:(NSString *)name;
+- (void) idPut:(id)value name:(NSString *)name;
+- (void) intPut:(int)value name:(NSString *)name;
+- (void) floatPut:(float)value name:(NSString *)name;
+
+- (int) empty_intPutName:(NSString *)name;
+- (id) id_idPut:(id)value name:(NSString *)name;
+- (void) empty_emptyPutName:(NSString *)name;
+- (float) id_floatPut:(id)value name:(NSString *)name;
+
++ (void) intReply:(int)value to:(CjR_A*)molecule;
++ (void) emptyReply:(empty)value to:(CjR_A*)molecule;
++ (void) idReply:(id)value to:(CjR_A*)molecule;
+
 /// convenience functions to convert between id and primitive types: do we need them all?
 + (int) unwrap_int:(id)value;
 + (id) unwrap_id:(id)value;
@@ -104,6 +140,9 @@ typedef void(^ReactionPayload)(NSArray *inputs);
 // Todo: implement the special reaction with JoinControl
 
 // Syntactic sugar
+#define cjFuncVar(out,m,in)  out(^m)(in)
+#define cjSlow(m,t)       cjFuncVar(void,m,t)
+#define cjFast(out, m, t)      cjFuncVar(out,m,t)
 
 #define _cjAssignRadical(m,t) m = [CjR_##t name:@#m join:_cj_LocalJoin]; (void)m;
 
