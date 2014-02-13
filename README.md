@@ -16,17 +16,21 @@ Join calculus realizes asynchronous computations through an "abstract chemical m
 
 The programmer defines the names of allowed molecules and the type of value carried by each molecule (say, `a` carries integer, `b` carries string, etc.). The programmer also defines reactions that are allowed between the molecules. Each reaction consumes one or more input molecules, then performs some computation using the values carried by the input molecules, and finally can produce some output molecules with some new values. The input molecules disappear from the "chemical soup" while the reaction is running, and at the end the new output molecules are injected into the "soup".
 
-Reactions start asynchronously and concurrently, whenever the input molecules become available. For example, suppose we define a reaction `consume a(x), b(y) => print(x,y); inject b(x+y)`, and inject 5 copies of the molecule `a` and 3 copies of the molecule `b`, so that the "chemical soup" initially contains, say, the following molecules,
+Reactions start asynchronously and concurrently, whenever the input molecules become available. For example, suppose we define a reaction like this,
+
+	consume a(x), b(y) => print x; print y; inject b(x+y)
+
+and inject 5 copies of the molecule `a` and 3 copies of the molecule `b`, so that the "chemical soup" initially contains, say, the following molecules,
 
 	a(10), a(2), a(4), a(21), a(156), b(1), b(1), b(1)
 
-Then the chemical machine will start 3 concurrent reactions between some (randomly chosen) copies of `a` and `b`. A possible result will be that the machine prints 
+Then the chemical machine will start 3 concurrent reactions between some (randomly chosen) copies of `a` and `b`. A possible result will be that the machine prints (in random order)
 
-	2 1
 	21 1
+	2 1
 	156 1
 
-and the soup contains
+and the soup then contains
 
 	a(10), b(3), a(4), b(22), b(157)
 
@@ -44,11 +48,11 @@ At this point, no more reactions are possible, and the "chemical machine" will w
 Remarks
 -------
 
-By default all reactions start _asynchronously_ (in a different thread). For this reason, injecting a molecule `a` does not immediately start a reaction even if some molecules `b` are already present. Also, reactions start in random order; if there are several reactions involving the same input molecules, a randomly chosen reaction will start. So it is the responsibility of the programmer to design the "chemistry" such that the desired values are computed in the right order.
+By default all reactions start _asynchronously_ (in a different thread). For this reason, injecting a molecule `a` does not immediately start a reaction even if some molecules `b` are already present in the soup. Also, reactions start in random order; if there are several reactions involving the same input molecules, a randomly chosen reaction will start. So it is the responsibility of the programmer to design the "chemistry" such that the desired values are computed in the right order, while other values are computed concurrently.
 
 Reactions do not _have_ to inject any output molecules. If a reaction does not inject any output, the input molecules will be consumed and will disappear from the soup. However, a reaction _must_ consume at least one input molecule.
 
-The reaction is written as a pure function that takes each input molecule's value as an argument. For now, we will write reactions using pseudocode with keywords such as `consume`, `inject`, etc. These keywords are used here just for clarity; they do not correspond to any implementation of join calculus.
+The reaction's "body" is written as a pure function that takes each input molecule's value as an argument. For now, we write reactions using pseudocode with keywords such as `consume`, `inject`, etc. These keywords are used here just for clarity; they do not correspond to the syntax of any existing implementation of join calculus.
 
 For instance, consider the reaction
 
@@ -56,9 +60,9 @@ For instance, consider the reaction
 		let r = compute_whatever(x,y) in
 		inject c(r),a(x),a(y),a(22); // whatever
 
-This reaction takes `x` and `y` as arguments and computes a function, then injects some new molecules back into the soup.
+This reaction takes `x` and `y` as arguments and computes a function, then injects some new molecules back into the soup. The values carried by the output molecules are pure functions of the values carried by the input molecules.
 
-The input molecules of a reaction must be _all different_, and the argument names must be all different. It is not allowed to have a reaction such as
+The names of the input molecules of a reaction must be all different, and the argument names also must be all different. Thus it is not allowed to define reactions such as
 
 	consume a(x), a(y), a(z) => ...
 
@@ -68,21 +72,29 @@ or
 
 This limitation ("reactions must be _linear_ in the input") is not really restricting the computational power of join calculus.
 
-The set of reactions that use the same input molecules is called a "join definition". Reactions involving the same input molecules always have to be defined together in a single join definition. Once a join definition is made that involves some new molecules as inputs, the "chemistry" of the new molecules is set in stone - no further reactions can be added to the same input molecules. In other words, reactions and molecule names are defined statically.
+The definition of a set of reactions that use the same input molecules is called a *join definition*. More precisely, a join definition defines at the same time the names of the input molecules and all the reactions involving these input molecules. The names of the input molecules are treated as _new_ local values, shadowing any previously visible definition of these names.
 
-In join calculus, the molecule names (`a`, `b`, etc.) are syntactically function names and play the role of "injectors" for molecules. By writing `a(2)`, the programmer performs an injection of the molecule `a` with value `2` into the soup. The construction `a(2)` is, in fact, _not_ a value in the program, because it represents the "fully constructed molecule" that exists only within the "chemical soup". On the other hand, the molecule name `a` is a value in the program, it can be given as an argument to a function, stored in an array, and so on.
+Reactions involving the same input molecules always have to be defined together in a single join definition. For example, consider the following two reactions,
 
-Moreover, molecule names are _local_ values. These values are created when a new reaction is defined. For this reason, it is possible to define reactions within a local scope (say, within a function). The reactions defined for these molecules are incapsulated within the local scope and not visible from outside. The outer scope cannot modify these reactions or directly access all molecules defined inside. If some of these new molecules are needed outside the local scope, their names can be returned to the outer scope, say as return values of the function. The outer scope will then be able only to _inject_ these new molecules into the soup, and only as long as the molecule names were passed back to the outer scope.
+	consume a(x), b(y) => ...
+	consume b(y), c(z) => ...
 
-Features
---------
+Both reactions have the molecule `b` as an input molecule, so we need to define these reactions together with declaring the new molecule names `a`, `b`, `c`.
 
-Join calculus gives the programmer has the following basic functionality:
 
-* define arbitrary names for molecules, with arbitrary types of values
-* define several reactions with one, two, or more input molecules
-* inject molecules with values into the soup
-* use local definitions of molecule names; join definitions are locally scoped and static
+	consume a(x), b(y) => inject b(x+y)
+	consume c(x), d(y) => inject a(x-y)
+
+These two reactions do not have a common input molecule. For this reason, we do not necessarily have to define them together in a single join definition. However, note that the first reaction defines the name `a` for the molecule that is used in the second reaction. For this reason, the second reaction needs to be defined _after_ the first one, and the definition of the second reaction must be made within a scope where the name `a` is still visible.
+
+Once a join definition is made that involves some new molecules as inputs, the "chemistry" of the new molecules is set in stone - no further reactions can be added to the same input molecules. In other words, reactions and molecule names are defined _statically_.
+
+In join calculus, the molecule names (`a`, `b`, etc.) are syntactically function names and play the role of "injectors" for molecules. By writing `a(2)`, the programmer performs an injection of the molecule `a` with value `2` into the soup. The construction `a(2)` is, in fact, _not_ a value in the program, because it represents the "fully constructed molecule" that exists only within the "chemical soup". On the other hand, the molecule name `a` is a local value in the program, it can be given as an argument to a function, stored in an array, and so on.
+
+It is important to realize that molecule names are _local_ values in join calculus. These values are created whenever a new reaction is defined that uses these names as input molecules. For this reason, it is possible to encapsulate reactions safely within a local scope (say, within the scope of a function). The reactions defined for these molecules are encapsulated within the local scope and are not visible outside that scope. The outside scope cannot modify these reactions or directly access all the molecules defined inside. If some of these new molecules are needed outside the local scope, their names must be returned to the outer scope, say as return values of the function. The outer scope will then be able only to _inject_ these new molecules into the soup, but not define any new reactions for them. There is an example of this functionality below.
+
+Synchronous molecules
+---------------------
 
 In addition to the molecules that start reactions asynchronously, there is a second type of molecules that are "synchronous" or "fast". A fast molecule, when injected into the soup, behaves like an ordinary function: it blocks the execution thread and returns a value to the caller.
 
@@ -94,8 +106,8 @@ This assigns the return value `x` to the "fast" molecule `m`. This cannot be use
 
 Once the `reply` operator is called, the injecting thread unblocks and the value is returned from the injection call. The reaction, meanwhile, continues (perhaps asynchronously) and may inject other molecules into the soup or "reply" to other fast molecules.
 
-Example
-=======
+Example 1: asynchronous counter
+-------------------------------
 
 Here is how one can implement an "asynchronous counter".
 
@@ -153,10 +165,54 @@ The result will be that a _new_ name `inc` is defined, with this new reaction. T
 
 Due to this feature, local reactions are encapsulated and can be safely used from the outer scope.
 
+Example 2: map/reduce
+---------------------
+
+"Map": We need to schedule `n` computational tasks `task(x)` concurrently on each element `x` of a collection `C`. "Reduce": as soon as each task is finished, we need to collect the intermediate results and merge them repeatedly together with the function `reduce(a,b)` in order to compute the final value.
+
+We assume that the reducer is associative: 
+
+`reduce(a,reduce(b,c)) = reduce(reduce(a,b),c)`
+
+So it is correct to reduce the intermediate results in any order and even concurrently, as long as no intermediate value is lost.
+
+We design the "chemistry" as follows.
+
+Summary of features of join calculus
+------------------------------------
+
+Join calculus is a purely functional, declarative model of concurrent computation. Join calculus is uses only a small subset of features (pure functions with arguments; locally scoped, typed values; threads and semaphores) that are available in most programming languages and platforms. For this reason, join calculus can be easily embedded as a library in most programming languages.
+
+Join calculus gives the programmer has the following basic functionality:
+
+* define arbitrary names for molecules, with arbitrary types of values
+* jointly define several reactions with one or more input molecules
+* inject molecules with values into the soup at any time (also within reactions)
+* use molecule names as locally defined values, pass them to functions, store them in local data structures
+
+The programmer can use any number of molecules and reactions. By defining the "chemistry" in a suitable way, the programmer can organize concurrent computations in any desired fashion, while remaining within the declarative and purely functional paradigm. For instance, the programmer can:
+
+* use locally defined reactions to encapsulate functionality and ensure correct operation
+* encapsulate reactions and molecules inside recursive functions, thus creating a dynamic, recursive graph of reactions at run time
+* use "higher-order" chemistry: molecules can carry values that contain _other molecule names_, which then become available within a reaction and may be injected to start arbitrary other reactions 
+* use "fast" molecules in order to wait synchronously until certain reaction start or end
+* use "slow" molecules to receive response asynchronously from other reactions
+* use "fast" molecules to receive values synchronously from other reactions
+
+Join calculus has the following advantages over other models of concurrent computation:
+
+* join definitions are locally scoped and _statically_ defined; reactions are guaranteed to be immutable, the programmer cannot redefine a reaction by mistake or inject molecules that are invisible in the present scope
+* each computation is a pure function in a local scope, there is no global "state of the chemistry"
+* all computations are scheduled asynchronously, concurrently, and - this is important - _implicitly_: the programmer does not need to write code for creating new threads and scheduling reactions
+* one core or multicore, one threads or many threads - these are low-level details that are hidden from the programmer, who merely needs to inject some molecules
+* all low-level synchronization, locks, and semaphores are implicit in the "laws of chemistry" defined declaratively by the programmer
+* the concurrency is easy to reason about because there is only one concept to consider: "_reaction starts whenever the required input molecules are present_"
+* the programmer does not manipulate shared mutable state; all state is represented by values carried by the molecules, passed automatically and implicitly from one reaction to another
+
 Notes on the Objective-C implementation
 ---------------------------------------
 
-This implementation of join calculus in Objective-C is called CocoaJoin. It is implemented as a small library and a set of CPP convenience macros. The implementation uses GCD ("grand central dispatch") and its queues to run reactions. Each "join definition" allocates a new asynchronous queue for reactions. A semaphore is used to implement "fast" molecules.
+This implementation of join calculus in Objective-C is called `CocoaJoin`. It is implemented as a small library and a set of CPP convenience macros. The implementation uses Apple's multithreading library GCD ("grand central dispatch") to schedule reactions. Each "join definition" allocates a new asynchronous queue for reactions (however, GCD will make sure not to overload the available CPU cores). A semaphore and shared state is used to implement "fast" molecules.
 
 To use the library, import `CJoin.h`. Compile the .m files in CocoaJoin/. The implementation uses ARC and should work on iOS 6.0 and up.
 
@@ -233,6 +289,21 @@ Note that join calculus intentionally restricts the tasks that the decision code
 * Weak typing
 
 When the user defines a molecule name with some type such as `int`, the compiler will check that the name is used with values of the correct type. So, after defining `cjAsync(counter, int)` it will be an error to inject this molecule as `[counter put:@"x"]`. However, this error becomes merely a warning with the type `id` since this type is compatible with any other object type.
+
+* Thread safety
+
+Each molecule carries a value that may cross thread boundaries. This can happen in several cases:
+
+- the molecule is injected on a background thread but a reaction is designated for the UI thread
+- both the injection and the reaction are on background threads, but the GCD system running on a multicore CPU decides to run them on _different_ background threads
+
+Not all Objective-C values are thread-safe in the sense of being able to pass from one thread to another without crashing. In particular, UIKit view objects and Core Data values _cannot_ pass thread boundaries without severe problems (crash, incorrect visual display, or loss of data). Join calculus is designed to operate on immutable values; therefore, Objective-C anonymous closures, immutable objects, and immutable collections should be safe.
+
+If it is required to use a mutable object or collection, join calculus can easily guarantee that only one thread will ever modify the object. To achieve this, define a reaction that consumes a certain input molecule, and then hide this reaction and the molecule in a local scope that injects a single copy of the molecule into the soup. This will make sure that there is ever at most one copy of this molecule in the soup. Thus, there will never be several concurrent reactions of this type. The example of "asynchronous counter" uses this technique.
+
+`CocoaJoin` uses ARC (automatic reference counting), which means that injecting heap-allocated values is mostly unproblematic. An exception is the case of anonymous closures as molecule values. This is still problematic due to the limitations of Objective-C (no garbage collection and no generics). Because of lack of generics, the closure must be represented by the type `id`, and then the memory management rests with the programmer. The problem may be that injecting a molecule carrying a closure requires that the closure should be first manually copied to the heap - otherwise the memory management system will lose the closure, causing a crash later (without a stack trace!). A solution can be to cast a closure manually to some fiducial object type (such as `NSBlock`), so that the memory management system thinks it's an Objective-C object with standard memory management, and then to cast the closure back to its correct type (so that the system allows the programmer to use the closure at all).
+
+In the current implementation, molecule names _are_ anonymous closures, so the users of "higher-order chemistry" must confront this problem!
 
 Finally, Objective-C cannot fully guarantee static typing or fully hide private variables. Nevertheless, Objective-C has local scope and weak typing. It will be certainly possible to break the functionality of CocoaJoin; the compiler cannot prevent using private methods or calling some methods incorrectly. But the library should work correctly as long as the user does not go outside the provided macros.
 
