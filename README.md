@@ -239,7 +239,9 @@ This completes the implementation of map/reduce with fully concurrent computatio
 
 This function receives a previously defined molecule name, `all_done`, to signal asynchronously that the job is complete and to deliver the final result value. All reactions and newly defined molecules remain hidden in the local scope of the function.
 
-With a slightly different set of "chemical laws", it is possible to signal completion synchronously, to limit the number of reducers, or to make all reductions sequential, or to organize the concurrent computations in any other desired manner.
+With a slightly different set of "chemical laws", it is possible to signal completion synchronously, or to limit the number of concurrently running tasks, or to provide only a fixed number of concurrent reducers.
+
+In this way, the programmer can organize the concurrent computations in any desired manner.
 
 Summary of features of join calculus
 ------------------------------------
@@ -255,27 +257,31 @@ Join calculus gives the programmer has the following basic functionality:
 
 The programmer can use any number of molecules and reactions. By defining the "chemistry" in a suitable way, the programmer can organize concurrent computations in any desired fashion, while remaining within the declarative and purely functional paradigm. For instance, the programmer can:
 
-* use locally defined reactions to encapsulate functionality and ensure correct operation
-* encapsulate reactions and molecules inside recursive functions, thus creating a dynamic, recursive graph of reactions at run time
-* use "higher-order" chemistry: molecules can carry values that contain _other molecule names_, which then become available within a reaction and may be injected to start arbitrary other reactions 
 * use "fast" molecules in order to wait synchronously until certain reaction start or end
 * use "slow" molecules to receive response asynchronously from other reactions
 * use "fast" molecules to receive values synchronously from other reactions
+* use locally defined reactions to encapsulate and reuse concurrent functionality
+* create new reactions and molecules inside recursive functions, thus creating a dynamic, recursive graph of reactions at run time
+* use "higher-order" chemistry: molecules can carry values that contain _other molecule names_ or _functions of molecule names_, which then become available within a reaction and may be used to inject arbitrary molecules or to perform arbitrary computations 
 
 Join calculus has the following advantages over other models of concurrent computation:
 
+* concurrency is declarative and simple to reason about because the operational semantics is based on just two easily visualized principles:
+
+1. A reaction starts whenever the required input molecules are present in the soup.
+2. A reaction consumes input molecules from the soup, then performs a computation, and then injects the output molecules into the soup.
+
 * join definitions are locally scoped and _statically_ defined; reactions are guaranteed to be immutable, the programmer cannot redefine a reaction by mistake or inject molecules that are invisible in the present scope
 * each computation is a pure function in a local scope, there is no global "state of the chemistry"
-* all computations are scheduled asynchronously, concurrently, and - this is important - _implicitly_: the programmer does not need to write code for creating new threads and scheduling reactions
-* one core or multicore, one threads or many threads - these are low-level details that are hidden from the programmer, who merely needs to inject some molecules
-* all low-level synchronization, locks, and semaphores are implicit in the "laws of chemistry" defined declaratively by the programmer
-* the concurrency is easy to reason about because there is only one concept to consider: "_reaction starts whenever the required input molecules are present_"
+* all concurrent computations are scheduled  _implicitly_: there is no hand-written code for creating or stopping new threads, scheduling new jobs, or waiting for completion
+* one core or multicore, one threads or many threads - these low-level details are hidden from the programmer, who merely needs to inject some molecules to initiate concurrent computations
+* the use of low-level synchronization primitives, such as locks and semaphores, is implicit in the "laws of chemistry" defined by the programmer
 * the programmer does not manipulate shared mutable state; all state is represented by values carried by the molecules, passed automatically and implicitly from one reaction to another
 
 Notes on the Objective-C implementation
 ---------------------------------------
 
-This implementation of join calculus in Objective-C is called `CocoaJoin`. It is implemented as a small library and a set of CPP convenience macros. The implementation uses Apple's multithreading library GCD ("grand central dispatch") to schedule reactions. Each "join definition" allocates a new asynchronous queue for reactions (however, GCD will make sure not to overload the available CPU cores). A semaphore and shared state is used to implement "fast" molecules.
+This implementation of join calculus in Objective-C is called `CocoaJoin` and consists of a small library and a set of CPP convenience macros. The implementation uses Apple's multithreading library GCD ("grand central dispatch") to schedule reactions. Each "join definition" allocates a new asynchronous queue for reactions (however, GCD will make sure not to overload the available CPU cores). A semaphore and shared state is used to implement "fast" molecules. Molecule names are anonymous closures ("Objective-C blocks" as Apple calls them).
 
 To use the library, import `CJoin.h`. Compile the .m files in CocoaJoin/. The implementation uses ARC and should work on iOS 6.0 and up.
 
@@ -287,9 +293,9 @@ For convenience, macros are provided. The example of "asynchronous counter" is i
           cjAsync(counter, int) // define slow molecule, counter(int x)
           cjSync(int, getValue, empty) // define fast molecule, int getValue()
           
-          cjReact2(inc, empty, _, counter, int, n, // use the name _ for unused empty value
+          cjReact2(inc, empty, dummy, counter, int, n, // using the name "dummy" for empty value
            [counter put:n+1]; ); // define reaction: consume inc(), counter(n), inject counter(n+1)
-          cjReact2(counter, int, n, getValue, empty_int, _,
+          cjReact2(counter, int, n, getValue, empty_int, dummy,
            [counter put:n], cjReply(getValue, n); ); // define reaction: consume counter(n), getValue(), inject counter(n) and reply n to getValue
     );
     [counter put:0], [inc put], [inc put];
