@@ -64,11 +64,11 @@ This reaction takes `x` and `y` as arguments and computes a function, then injec
 
 The names of the input molecules of a reaction must be all different, and the argument names also must be all different. Thus it is not allowed to define reactions such as
 
-	consume a(x), a(y), a(z) => ...
+	consume a(x), a(y), a(z) => ... (wrong)
 
 or
 
-	consume a(x), b(x), c(x) => ...
+	consume a(x), b(x), c(x) => ... (wrong)
 
 This limitation ("reactions must be _linear_ in the input") is not really restricting the computational power of join calculus.
 
@@ -163,7 +163,7 @@ The user can certainly add new reactions that consume other molecules and _injec
 
 The result will be that a _new_ name `inc` is defined, with this new reaction. This new `inc` belongs to a new join definition and cannot react to the old `counter` molecule. This is so because a join definition always _defines_ the input molecule names as new values in the local scope.
 
-Due to this feature, local reactions are encapsulated and can be safely used from the outer scope.
+Due to this feature, local reactions are encapsulated and can be safely used from an outer scope.
 
 Example 2: map/reduce
 ---------------------
@@ -174,7 +174,7 @@ We assume that the reducer is associative:
 
 `reduce(a,reduce(b,c)) = reduce(reduce(a,b),c)`
 
-So it is correct to reduce the intermediate results in any order and even concurrently, as long as no intermediate value is lost.
+Thus, we are allowed to reduce the intermediate results in any order and even concurrently, as long as no intermediate values are lost.
 
 We design the "chemistry" as follows:
 
@@ -187,7 +187,59 @@ We design the "chemistry" as follows:
 
 		consume done(x), done(y) => inject done(z), where z = reduce(x,y)
 
-If this were possible, we would achieve the result that all reducing operations start concurrently. However, we are not allowed to define reactions that consume two copies of the same molecule. We need to define additional auxiliary reactions ... (to be continued)
+If this were possible, we would achieve the result that all reducing operations start concurrently. However, we are not allowed to define reactions that consume two copies of the same molecule. We need to use a different molecule instead of `done(y)`, so we change this reaction to
+
+		consume done(x), done'(y) => inject done(z), where z = reduce(x,y)
+
+To convert `done` into `done'`, we use another reaction with a `primer` molecule:
+
+		consume done(x), primer() => inject done'(x)
+
+Now we just need to make sure that there are enough `primer` molecules in the soup, so that all intermediate results get reduced. Here is how we can reason about this situation. If we have `n` tasks, we need to call the reducer `n-1` times in total. The reducer is called once per a "primed" molecule `done'`. Therefore, we need to create `n-1` primed molecules, which is possible only if we have `n-1` copies of `primer()` in the soup. If we inject `n-1` copies of `primer()` into the soup at the beginning, the result at the end will be a single `done(z)` molecule, regardless of the order of intermediate reactions.
+
+- finally, we need to signal that all jobs are finished. A single `done(z)` molecule will carry our result `z`, but it will stay in the soup indefinitely and will not start any reactions by itself. In join calculus, we cannot define a reaction with a "guard condition", such as
+
+		consume done(x) when x > 100 => ... (wrong)
+
+Reactions start when input molecules are present, regardless of the values on the molecules. Guard conditions are not part of the language.
+
+Therefore, we need to be able to detect, _before_ injecting the last `done` molecule, that this molecule is going to be the last one. The only way to know that is if the `done` molecule carries on itself the number of already performed reductions. Thus, we let the `done` molecule carry a pair: `done(x,k)` where `k` shows how many reductions were already performed. When a single task is done, we inject `done(x,1)` into the soup:
+
+		consume begin(x) => inject done (z, 1) where z = compute_something(x)
+
+When we reduce two values to one, we add their `k` values:
+
+		consume done(x,k), done'(y,l) => inject done( reduce(x,y), k+l )
+
+Just one more refinement of this: when `k+l` becomes equal to `n`, we need to stop and signal completion. For instance, like this:
+
+		consume done(x,k), done'(y,l) => 
+			if m==n then inject all_done(z) 
+			else inject done(z,m) 
+			where
+				z=reduce(x,y)
+				m=k+l
+
+This completes the implementation of map/reduce with fully concurrent computations. The full pseudocode looks like this (assuming integer values):
+
+	function map_reduce(initial_array, compute_something, reduce, all_done) {
+		let n = length of initial_array
+		
+		define molecules begin(integer), done(integer, integer), done'(integer),
+			primer(void);
+		consume begin(x) => inject done(z, 1) where z = compute_something(x);
+		consume done(x,k), primer() => inject done'(x,k);
+		consume done(x,k), done'(y,l) => 
+			if k+l==n then inject all_done(z) 
+			else inject done(z,k+l) 
+			where z=reduce(x,y);
+		inject begin(x) for x in initial_array;
+		inject (n-1) copies of primer();
+	}
+
+This function receives a previously defined molecule name, `all_done`, to signal asynchronously that the job is complete and to deliver the final result value. All reactions and newly defined molecules remain hidden in the local scope of the function.
+
+With a slightly different set of "chemical laws", it is possible to signal completion synchronously, to limit the number of reducers, or to make all reductions sequential, or to organize the concurrent computations in any other desired manner.
 
 Summary of features of join calculus
 ------------------------------------
