@@ -442,6 +442,14 @@ _cjMkSPrivateAndImpl(int, int, assign)
     if (continuation != nil) continuation();
 }
 
+- (void) cycleMainLoopForSeconds:(CGFloat)seconds {
+    
+    NSDate *loopUntil = [NSDate dateWithTimeIntervalSinceNow:seconds];
+    while ([loopUntil timeIntervalSinceNow] > 0) {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:loopUntil];
+    }
+}
+
 + (id)wrap_empty:(empty)value {
     return value;
 }

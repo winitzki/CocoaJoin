@@ -27,14 +27,6 @@
 }
 
 /// useful for testing an asynchronous operation. Schedule an operation on main thread, then call this, then wait for results. (Otherwise, the main thread will block while waiting for results, because background operations will not be started until the main thread yields control to the runloop.)
-- (void) cycleMainLoopForSeconds:(CGFloat)seconds {
-    
-    NSDate *loopUntil = [NSDate dateWithTimeIntervalSinceNow:seconds];
-    while ([loopUntil timeIntervalSinceNow] > 0) {
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                 beforeDate:loopUntil];
-    }
-}
 - (void) testExample0 {
     // Here is the full code we would need to write if we don't use any macros.
     
@@ -49,10 +41,10 @@
         
         // declare reactions using these radicals
         [j defineReactionWithInputNames:@[@"inc", @"counter"] payload:^(NSArray *inputs) {
-            CjR_A<CjM_empty> *_cj_inc_M = [inputs objectAtIndex:0];
+            CjR_empty *_cj_inc_M = [inputs objectAtIndex:0];
             empty d = _cj_inc_M.value;
             (void)d;
-            CjR_A<CjM_int> *_cj_counter_M = [inputs objectAtIndex:1];
+            CjR_int *_cj_counter_M = [inputs objectAtIndex:1];
             int n = _cj_counter_M.value;
             (void)n;
             { counter(n+1); } // code given by user in macro
@@ -71,7 +63,7 @@
         j = nil; // make the variable j unusable now.
     
     counter(0), inc(), inc();
-    [self cycleMainLoopForSeconds:0.2];
+    [CJoin cycleMainLoopForSeconds:0.2];
     
     int v = get();
     

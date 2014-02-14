@@ -246,7 +246,14 @@ In this way, the programmer can organize the concurrent computations in any desi
 Summary of features of join calculus
 ------------------------------------
 
-Join calculus is a purely functional, declarative model of concurrent computation. Join calculus is uses only a small subset of features (pure functions with arguments; locally scoped, typed values; threads and semaphores) that are available in most programming languages and platforms. For this reason, join calculus can be easily embedded as a library in most programming languages.
+Join calculus is a purely functional, declarative model of concurrent computation. This model does not depend on any particular programming language and uses features available in most programming languages: 
+
+* pure functions with arguments
+* locally scoped values
+* concurrent threads
+* sending values synchronously to a blocking call in another thread
+
+For this reason, join calculus can be easily embedded as a library in most programming languages.
 
 Join calculus gives the programmer has the following basic functionality:
 
@@ -271,7 +278,8 @@ Join calculus has the following advantages over other models of concurrent compu
 1. A reaction starts whenever the required input molecules are present in the soup.
 2. A reaction consumes input molecules from the soup, then performs a computation, and then injects the output molecules into the soup.
 
-* join definitions are locally scoped and _statically_ defined; reactions are guaranteed to be immutable, the programmer cannot redefine a reaction by mistake or inject molecules that are invisible in the present scope
+* reaction and molecule definitions are locally scoped and _static_
+* reactions are guaranteed to be immutable, the programmer cannot redefine a reaction by mistake or accidentally inject molecules that should not be injected
 * each computation is a pure function in a local scope, there is no global "state of the chemistry"
 * all concurrent computations are scheduled  _implicitly_: there is no hand-written code for creating or stopping new threads, scheduling new jobs, or waiting for completion
 * one core or multicore, one threads or many threads - these low-level details are hidden from the programmer, who merely needs to inject some molecules to initiate concurrent computations
@@ -294,51 +302,49 @@ For convenience, macros are provided. The example of "asynchronous counter" is i
           cjSync(int, getValue, empty) // define fast molecule, int getValue()
           
           cjReact2(inc, empty, dummy, counter, int, n, // using the name "dummy" for empty value
-           [counter put:n+1]; ); // define reaction: consume inc(), counter(n), inject counter(n+1)
+           counter(n+1); ); // define reaction: consume inc(), counter(n), inject counter(n+1)
           cjReact2(counter, int, n, getValue, empty_int, dummy,
-           [counter put:n], cjReply(getValue, n); ); // define reaction: consume counter(n), getValue(), inject counter(n) and reply n to getValue
+           counter(n), cjReply(getValue, n); ); // define reaction: consume counter(n), getValue(), inject counter(n) and reply n to getValue()
     );
-    [counter put:0], [inc put], [inc put];
-    [self cycleMainLoopForSeconds:0.2];	// allow enough time for reactions to run
+    counter(0), inc(), inc();
+    [CJoin cycleMainLoopForSeconds:0.2];	// allow enough time for reactions to run
     
-    int v = [getValue put]; // getValue returns 2
+    int v = getValue(); // getValue returns 2
 
 CocoaJoin modifies the model of join calculus in some inessential ways:
 
 * Only a subset of primitive types are supported for molecule values: `empty`, `int`, `float`, `id.` Similarly, the return values of fast molecules can have only these types. Here `empty` is the functionally same as NSNull.
 * Molecule names are local values of certain predefined classes such as `CjR_int`, `CjR_empty`, `CjR_id_id`, etc., depending on the types of values. (Fully constructed molecules are not available as objects, as in JoCaml.)
 
-Available classes:
+Available types:
 
-	CjR_A -- abstract parent class of all molecule names (fast or slow)
-	CjS_A -- abstract parent class of all fast molecule names
 	CjR_empty -- name of a slow molecule with empty value, inc()
-	CjR_id -- name of a slow molecule with id value, such as s(@"x")
+	CjR_id -- name of a slow molecule with id value, such as s(someObject)
 	CjR_int -- name of a slow molecule with int value
 	CjR_float -- name of a slow molecule with float value
 	CjR_empty_empty -- name of a fast molecule with empty value, returning empty
 
 Other types of this form: `CjR_`_t_`_`_r_  represents a name of a fast molecule carrying value of type _t_ returning a value of type _r_. In ordinary join calculus, this type would be a function _t_ -> _r_.
 
-* The syntax of molecule injection is not `a(x)` or `b()` but `[a put:x]` and `[b put]`.
-* The syntax of `reply` is `[f reply:x]` or `[f reply]`, where `f` must be a fast molecule. (Otherwise, there will be a compile-time error, since the `reply` method is only defined for fast molecules.)
-* It is not possible to make two join definitions one after another in the same local scope.
+* The syntax of molecule injection is simply `a(x)` or `b()`. (Note that the fully constructed molecule is not available as a separate object
+* The syntax of `reply` is `cjReply(name, value)`, where `name` must be the name of a fast molecule. (Otherwise there will be a compile-time error, since the `reply` method is only defined for fast molecules.)
+* It is not possible to make two join definitions one after another in the same local scope. Separate them with `{ ... }` or define them within different function/method scopes.
 * To make a new join definition, each new molecule name must be defined with its explicit type.
 
 We need to list explicitly all the newly declared input names, because otherwise we cannot generate code for defining them. (The macro processor is unable to process arrays of parameters.)
 
 * Defining a reaction with an input name that has already been defined in the same local scope is impossible (it may result in a compiler error due to name clash).
 
-This is so because the definition of an input name is equivalent in Objective-C to
+This is so because the definition of an input molecule name, e.g. `counter` with integer value, is equivalent in Objective-C to the declaration of a new local variable,
 
-	CjR_int *counter = ...
+	  void(^counter)(int) = ...
 
 If the name `counter` is already locally defined, it is a compile-time error to define the same name again in the same scope. No error will result if the name is redefined within another local scope.
 
 * A join definition is represented by an object of class `CJoin` (the "join object").
 
-The join object is not visible directly. After performing a join definition, the join object initializes its job queue and is ready to accept any injected molecules known to it, i.e. any of its input molecules. When the join object is destroyed, it also destroys the queue it has created.
-     
+The join object is not visible directly, and should not be manipulated by the programmer. (It is not possible to hide it entirely, without making the Objective-C syntax of join calculus extremely verbose.) After performing a join definition, the join object initializes its job queue and is ready to accept any injected molecules known to it, i.e. any of its input molecules. When the join object is destroyed, it also destroys the queue it has created.
+
 Each molecule name carries a strong reference to the join object to which it belongs, and there are no other references to the join object. Once you destroy the last molecule name that uses the join object, the join is gone.
 
 Together with the join object, the molecule names are created in the local scope, and their reactions have been defined and stored in the join object.

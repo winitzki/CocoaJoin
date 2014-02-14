@@ -143,18 +143,33 @@ typedef void(^ReactionPayload)(NSArray *inputs);
 + (void) stopAndThen:(void (^)(void))continuation;
 
 - (void) emptyPutName:(NSString *)name;
-- (void) idPut:(id)value name:(NSString *)name;
-- (void) intPut:(int)value name:(NSString *)name;
-- (void) floatPut:(float)value name:(NSString *)name;
+#define _cjMkPut(t)\
+- (void) t##Put:(t)value name:(NSString *)name;
 
+_cjMkPut(id)
+_cjMkPut(int)
+_cjMkPut(float)
+
+- (void) empty_emptyPutName:(NSString *)name; \
 - (int) empty_intPutName:(NSString *)name;
+- (void) int_emptyPut:(int)value name:(NSString *)name;
+
+#define _cjMkSEPut(s,t)\
+- (void) empty_emptyPutName:(NSString *)name; \
+- (t) s##_##t##Put:(s)value name:(NSString *)name;
+
+#define _cjMkSPut(s,t)\
+- (void) empty_emptyPutName:(NSString *)name; \
+- (t) s##_##t##Put:(s)value name:(NSString *)name;
+
 - (id) id_idPut:(id)value name:(NSString *)name;
-- (void) empty_emptyPutName:(NSString *)name;
 - (float) id_floatPut:(id)value name:(NSString *)name;
 
-+ (void) intReply:(int)value to:(CjR_A*)molecule;
-+ (void) emptyReply:(empty)value to:(CjR_A*)molecule;
-+ (void) idReply:(id)value to:(CjR_A*)molecule;
++ (void) intReply:(int)value to:(CjS_A*)molecule;
++ (void) emptyReply:(empty)value to:(CjS_A*)molecule;
++ (void) idReply:(id)value to:(CjS_A*)molecule;
+
++ (void) cycleMainLoopForSeconds:(CGFloat)seconds;
 
 /// convenience functions to convert between id and primitive types: do we need them all?
 + (int) unwrap_int:(id)value;
