@@ -9,6 +9,8 @@ There are a few implementations of join calculus in functional programming langu
 
 For a tutorial introduction to join calculus using JoCaml, see https://sites.google.com/site/winitzki/tutorial-on-join-calculus-and-its-implementation-in-ocaml-jocaml
 
+This project contains the join calculus library and an example iOS application, `DinPhil5`, that shows five "dining philosophers" taking turns thinking and eating.
+
 Overview of join calculus
 -------------------------
 
@@ -239,9 +241,27 @@ This completes the implementation of map/reduce with fully concurrent computatio
 
 This function receives a previously defined molecule name, `all_done`, to signal asynchronously that the job is complete and to deliver the final result value. All reactions and newly defined molecules remain hidden in the local scope of the function.
 
+The function `map_reduce` can be seen as part of a "standard chemical library" of predefined molecules and reactions that can be reused by programmers.
+
 With a slightly different set of "chemical laws", it is possible to signal completion synchronously, or to limit the number of concurrently running tasks, or to provide only a fixed number of concurrent reducers.
 
 In this way, the programmer can organize the concurrent computations in any desired manner.
+
+Example 3: enable/disable
+-------------------------
+
+In an interactive application, we might have a button that starts an asynchronous computation. This can be implemented in join calculus by making the button inject a slow molecule that starts an asynchronous reaction. Now, suppose we would like to "enable" or "disable" this response: when "disabled", the molecule should not start the computation.
+
+Here is how this functionality can be implemented in a "chemical library".
+
+Reactions are defined statically, so there is no way to modify a reaction so that, say, a new input molecule is required. All input molecules for the reaction have been already defined; now we would like to control whether this reaction starts. The only way of doing this is to control whether the required input molecule has been injected. Instead of enabling/disabling a reaction, we will enable/disable the injection of a molecule.
+
+Example 4: cancelable computation
+---------------------------------
+
+When a computation takes a long time, we may need to cancel it in the middle. Since it is impossible to stop a running thread from outside, what we need to do is to split the computation into several steps and check, after every step, whether we need to proceed to the next step or the computation has been cancelled. We may also need to notify an outside scope that the computation has been aborted after a certain step, and send the partial results to the outside scope.
+
+Here is how we can implement this functionality in a "chemical library".
 
 Summary of features of join calculus
 ------------------------------------
@@ -299,7 +319,7 @@ For convenience, macros are provided. The example of "asynchronous counter" is i
        
           cjAsync(inc, empty) // define slow molecule, inc()
           cjAsync(counter, int) // define slow molecule, counter(int x)
-          cjSync(int, getValue, empty) // define fast molecule, int getValue()
+          cjSyncEmpty(int, getValue) // define fast molecule, int getValue()
           
           cjReact2(inc, empty, dummy, counter, int, n, // using the name "dummy" for empty value
            counter(n+1); ); // define reaction: consume inc(), counter(n), inject counter(n+1)
@@ -318,17 +338,17 @@ CocoaJoin modifies the model of join calculus in some inessential ways:
 
 Available types:
 
-	CjR_empty -- name of a slow molecule with empty value, inc()
-	CjR_id -- name of a slow molecule with id value, such as s(someObject)
+	CjR_empty -- name of a slow molecule with empty value, such as inc()
+	CjR_id -- name of a slow molecule with id value, such as s(@"a")
 	CjR_int -- name of a slow molecule with int value
 	CjR_float -- name of a slow molecule with float value
-	CjR_empty_empty -- name of a fast molecule with empty value, returning empty
+	CjR_empty_int -- name of a fast molecule with empty value, returning int
 
 Other types of this form: `CjR_`_t_`_`_r_  represents a name of a fast molecule carrying value of type _t_ returning a value of type _r_. In ordinary join calculus, this type would be a function _t_ -> _r_.
 
 * The syntax of molecule injection is simply `a(x)` or `b()`. (Note that the fully constructed molecule is not available as a separate object
 * The syntax of `reply` is `cjReply(name, value)`, where `name` must be the name of a fast molecule. (Otherwise there will be a compile-time error, since the `reply` method is only defined for fast molecules.)
-* It is not possible to make two join definitions one after another in the same local scope. Separate them with `{ ... }` or define them within different function/method scopes.
+* It is not possible (due to limitations of the CPP macro processor) to make two join definitions one after another in the same local scope. Separate them with `{ ... }` or define them within different function/method scopes.
 * To make a new join definition, each new molecule name must be defined with its explicit type.
 
 We need to list explicitly all the newly declared input names, because otherwise we cannot generate code for defining them. (The macro processor is unable to process arrays of parameters.)
@@ -363,7 +383,7 @@ Note that join calculus intentionally restricts the tasks that the decision code
 
 * Weak typing
 
-When the user defines a molecule name with some type such as `int`, the compiler will check that the name is used with values of the correct type. So, after defining `cjAsync(counter, int)` it will be an error to inject this molecule as `[counter put:@"x"]`. However, this error becomes merely a warning with the type `id` since this type is compatible with any other object type.
+When the user defines a molecule name with some type such as `int`, the compiler will check that the name is used with values of the correct type. So, after defining `cjAsync(counter, int)` it will be an error to inject this molecule as `counter(@"x")`. However, this error becomes merely a warning with the type `id` since that type is compatible with any other object type.
 
 * Thread safety
 
@@ -413,9 +433,17 @@ Define a new input molecule name:
 
 `cjAsync(name, t)`
 
-- fast molecule with value of type `tin`, returning value of type `tout`
+- fast molecule with value of type `t_in`, returning value of type `t_out`
 
-`cjSync(tout, name, tin)`
+`cjSync(t_out, name, t_in)`
+
+- for molecules that carry no value, special macros are used:
+
+`cjAsyncEmpty(name)`
+
+`cjSyncEmpty(t_out, name)`
+
+For "fast" molecules that return no value, use the `empty` type, e.g. `cjSync(empty, f, int)`. These molecules will be declared as blocks returning an `empty` value (in Objective-C, this is `NSNull *null`).
 
 Define a new reaction:
 
@@ -428,6 +456,8 @@ Define a new reaction:
 `type1` is the type of the value of that molecule. For fast molecules, separate type with underscore: for example, `empty_int` or `id_id`.
 `var1` is the name of the formal parameter bound to the value of that molecule within the reaction body.
 `code` is the body of the reaction; this may use the locally defined names `name1` and `var1`.
+
+Note: for molecules that carry no values, the type `empty` is used here.
 
 - reactions taking two input molecules:
 
@@ -445,7 +475,7 @@ Here is an example of using the reaction macros.  To convert the pseudocode such
 into a macro call, we need to specify the names of the input molecules (`a`, `b`, `c`), the types of their arguments (`int`, `int`, `empty`), and the names of the formal parameters (`x`, `y`, `dummy`), and finally we need to write the function code for the reaction. Since there are three input molecules, we use the macro `cjReact3` and write
 
 	cjReact3(a, int, x, b, int, y, c, empty, dummy, { 
-		do_computations(x,y); [a put:x+y], [c put];
+		do_computations(x,y); a(x+y), c();
 	})
 
 Here we have put the reaction body into its own block for visual clarity, but this is not necessary. Also, it is optional whether to inject the molecules with the comma operator or through separate statements `[a put:x+y]; [c put];`. The reaction block returns nothing.
@@ -462,9 +492,9 @@ The `reply` operator, as well as injections of known molecules, can be used anyw
 Current status of CocoaJoin
 ---------------------------
 
-This is version 0.1. Right now, the operational semantics of join calculus is fully implemented.
+This is version 0.2. Right now, the operational semantics of join calculus is fully implemented.
 
-The CocoaJoin version 0.1 was tested on two few examples: synchronous and asynchronous counters. In addition, the "dining philosophers" problem is implemented with a barebones GUI.
+The CocoaJoin version 0.2 was tested on two few examples: synchronous and asynchronous counters. In addition, the "dining philosophers" problem is implemented with a barebones GUI.
 
 In the future, I might look into more features such as:
 
@@ -473,8 +503,3 @@ In the future, I might look into more features such as:
 Possible functions: stats (get statistics on the number of molecules and reactions), pause (do not schedule any new reactions), resume (start scheduling reactions again), clear (remove all present molecules in all reactions, stop all reactions, reply immediately to all fast molecules, and ignore requests to inject any new molecules).
 
 These global operations, as well as the corresponding local operations, can be implemented most easily via special predefined fast molecules that already have predefined reactions.
-
-* Implement molecule names as locally defined blocks, so that the syntax `counter(3)` or `inc()` can be used instead of the more verbose Objective-C syntax.
-
-The CocoaJoin API is subject to change. I am still investigating ways to simplify the calling conventions. A previous attempt to implement the `counter(3)` syntax was unsuccessful: sufficiently convenient macros could not be defined.
-

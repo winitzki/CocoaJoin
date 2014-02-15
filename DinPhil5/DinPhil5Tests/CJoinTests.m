@@ -36,9 +36,9 @@
     
     // create new molecule names.
     
-    CjM_empty inc = ^{ [j emptyPutName:@"int"]; };
-    CjM_int counter = ^(int value){ [j intPut:value name:@"counter"]; };
-    CjM_empty_int get = ^int() { return [j empty_intPutName:@"counter"]; };
+    CjM_empty inc = ^{ [CjR_empty name:@"int" join:j]; };
+    CjM_int counter = ^(int value){ [[CjR_int name:@"counter" join:j] put:value]; };
+    CjM_empty_int getValue = ^int() { return [[CjR_empty_int name:@"counter" join:j] put]; };
     
     // declare reactions using these molecule names.
     
@@ -56,11 +56,11 @@
         CjR_int *_cj_counter_M = [inputs objectAtIndex:0];
         int n = _cj_counter_M.value;
         (void)n;
-        CjR_empty_int *_cj_get_M = [inputs objectAtIndex:1];
-        empty_int dummy = _cj_get_M.value;
+        CjR_empty_int *_cj_getValue_M = [inputs objectAtIndex:1];
+        empty_int dummy = _cj_getValue_M.value;
         (void)dummy;
         
-        { counter(n), [CJoin intReply:n to:_cj_get_M]; }
+        { counter(n), [_cj_getValue_M reply:n]; }
     } runOnMainThread:NO];
     
     j = nil; // make the local variable j unusable now.
@@ -70,7 +70,7 @@
     counter(0), inc(), inc();
     [CJoin cycleMainLoopForSeconds:0.2];
     
-    int v = get();
+    int v = getValue();
     
     XCTAssertEqual(v, 2, @"async counter increased twice yields 2");
 }
@@ -80,9 +80,9 @@
     
     cjDef(
           
-          cjAsyncEmpty(inc)
-          cjAsync(counter, int)
-          cjSyncEmpty(int, getValue)
+          cjSlowEmpty(inc)
+          cjSlow(counter, int)
+          cjFastEmpty(int, getValue)
           
           cjReact2(inc, empty, dummy, counter, int, n, { counter(n+1); } );
           cjReact2(counter, int, n, getValue, empty_int, dummy, { counter(n); cjReply(getValue, n); } );
@@ -91,8 +91,43 @@
     counter(0), inc(), inc();
     [CJoin cycleMainLoopForSeconds:0.2];
     
-    int v = get();
+    int v = getValue();
     
     XCTAssertEqual(v, 2, @"async counter increased twice yields 2");
 }
+- (void) testExample3 {
+    cjDefUI(cjSlowEmpty(inc)
+            cjSlow(counter, int)
+            cjFastEmpty(int, getValue)
+            
+            cjReact2UI(inc, empty, dummy, counter, int, n, { counter(n+1); } );
+            cjReact2UI(counter, int, n, getValue, empty_int, dummy, { counter(n); cjReply(getValue, n); } );
+            )
+    counter(0), inc(), inc();
+    int v = getValue();
+    
+    XCTAssertEqual(v, 2, @"sync counter increased twice yields 2");
+}
+- (void) testExample4 { // run concurrent tasks
+    int total = 3;
+    cjDef(cjSlow(begin, int)
+          cjSlow(done, int)
+          cjSlow(acc, int)
+          cjSlow(all_done, int)
+          cjSlow(counter, int)
+          cjFastEmpty(int, getValue)
+          
+          cjReact1(begin, int, x, { done(x); } );
+          cjReact2(all_done, int, x, getValue, empty_int, _, cjReply(getValue, x);)
+          cjReact3(done, int, n, acc, int, p, counter, int, m, { int newCounter=m+1; int newValue = p+n; if (newCounter==total) all_done(newValue); else acc(newValue), counter(newCounter); } )
+          )
+    counter(0); acc(0);
+    for (int i=1; i <= total; i++) begin(i);
+
+    int v = getValue();
+    
+    XCTAssertEqual(v, total*(total+1)/2, @"adding numbers asynchronously is correct");
+    
+}
+
 @end

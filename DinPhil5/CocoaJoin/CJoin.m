@@ -10,7 +10,7 @@
 #import "NSNumber+lowercaseTypes.h"
 #import "WeakRef.h"
 
-#define LOGGING NO
+#define LOGGING YES
 
 static NSMutableSet *allCreatedJoins; // this set contains weakRef objects pointing to CJoin objects
 
@@ -50,11 +50,11 @@ _cjMkRClassPrivate(int, assign)
 _cjMkRClassPrivate(float, assign)
 
 @implementation CjR_A
-- (instancetype)makeCopy {
-    CjR_A *result = [self.class name:self.moleculeName join:self.ownerJoin]; // these can be shared
-    
-    return result;
-}
+//- (instancetype)makeCopy {
+//    CjR_A *result = [self.class name:self.moleculeName join:self.ownerJoin]; // these can be shared
+//    
+//    return result;
+//}
 + (instancetype)name:(NSString *)name join:(CJoin *)join {
     CjR_A *result = [[self alloc] init];
     result.moleculeName = name;
@@ -71,9 +71,10 @@ _cjMkRClassPrivate(float, assign)
 
 @implementation CjR_empty
 - (void)put {
-    CjR_empty *copy = [self makeCopy];
-    copy.value = [NSNull null];
-    [copy putInternal];
+    [self putInternal];
+}
+- (empty)value {
+    return [NSNull null];
 }
 - (NSString *)description {
     return [NSString stringWithFormat:@"%@(%@)", self.moleculeName, self.value];
@@ -83,9 +84,8 @@ _cjMkRClassPrivate(float, assign)
 #define _cjMkRImpl(t) \
 @implementation CjR_##t \
 - (void)put:(t)value { \
-    CjR_##t *copy = [self makeCopy];\
-    copy.value = value; \
-    [copy putInternal]; \
+    self.value = value; \
+    [self putInternal]; \
 } \
 - (NSString *)description { \
     return [NSString stringWithFormat:@"%@(%@)", self.moleculeName, [CJoin wrap_##t:self.value]]; \
@@ -114,7 +114,6 @@ _cjMkRImpl(float)
     dispatch_semaphore_signal(self.syncSemaphore);
 }
 - (id)putSyncInternal {
-//    CjS_A *copy = [self makeCopy];
     self.syncSemaphore = dispatch_semaphore_create(0);
     return [self.ownerJoin getSyncReplyTo:self];
 }
@@ -122,9 +121,7 @@ _cjMkRImpl(float)
 #define _cjMkSEImpl(t) \
 @implementation CjR_empty_##t \
 - (t)put { \
-    CjS_A *copy = [self makeCopy]; \
-    copy.value = [NSNull null]; \
-    return [CJoin unwrap_##t:[copy putSyncInternal]]; \
+    return [CJoin unwrap_##t:[self putSyncInternal]]; \
 } \
 - (void)reply:(t)value { \
     [self replyInternal:[CJoin wrap_##t:value]]; \
@@ -143,9 +140,8 @@ _cjMkRImpl(float)
 @end \
 @implementation CjR_##in##_##out \
 - (out)put:(in)value { \
-    CjR_##in##_##out *copy = [self makeCopy]; \
-    copy.value = value; \
-    return [CJoin unwrap_##out:[copy putSyncInternal]]; \
+    self.value = value; \
+    return [CJoin unwrap_##out:[self putSyncInternal]]; \
 } \
 - (void)reply:(out)value { \
     [self replyInternal:[CJoin wrap_##out:value]]; \
@@ -157,11 +153,10 @@ _cjMkRImpl(float)
 
 @implementation CjR_empty_empty
 - (void)put {
-    CjR_empty_empty *copy = [self makeCopy];
-    [copy putSyncInternal];
+    [self putSyncInternal];
 }
 - (void)reply {
-    [self replyInternal:[NSNull null]];
+    [self replyInternal:nil];
 }
 - (empty)value {
     return [NSNull null];
@@ -195,7 +190,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
 @property (strong, nonatomic) NSArray *moleculeNames;
 @property (copy, nonatomic) ReactionPayload reactionBlock;
 @property (assign, nonatomic) BOOL runOnMainThread;
-- (void) startReactionWithInput:(NSArray *)inputs;
+- (void) startReactionWithInputs:(NSArray *)inputs;
 @end
 
 
@@ -207,7 +202,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
     r.runOnMainThread = onMainThread;
     return r;
 }
-- (void)startReactionWithInput:(NSArray *)inputs {
+- (void)startReactionWithInputs:(NSArray *)inputs {
     self.reactionBlock(inputs);
 }
 @end
@@ -259,11 +254,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
     syncMolecule.syncSemaphore = nil;
     return syncMolecule.resultValue;
 }
-- (void)defineReactionWithInputs:(NSArray *)inputs payload:(ReactionPayload)payload runOnMainThread:(BOOL)onMainThread {
-    NSMutableArray *inputNames = [NSMutableArray arrayWithCapacity:inputs.count];
-    for (CjR_A *m in inputs) {
-        [inputNames addObject:m.moleculeName];
-    }
+- (void)defineReactionWithInputNames:(NSArray *)inputNames payload:(ReactionPayload)payload runOnMainThread:(BOOL)onMainThread {
     CjReaction *reaction = [CjReaction inputNames:inputNames payload:payload runOnMainThread:onMainThread];
     [self defineReaction:reaction];
 }
@@ -385,7 +376,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
     if (reaction.runOnMainThread && isMainThread) {
         if (LOGGING) NSLog(@"%@ %@ join %d starting reaction %@, input %@, on main thread", self.class, NSStringFromSelector(_cmd), self.joinID, reaction, inputMolecules);
         
-        [reaction startReactionWithInput:inputMolecules];
+        [reaction startReactionWithInputs:inputMolecules];
     } else {
         
         dispatch_queue_t queueForReaction = reaction.runOnMainThread ? dispatch_get_main_queue() : self.reactionQueue;
@@ -396,13 +387,17 @@ _cjMkSPrivateAndImpl(int, int, assign)
         dispatch_async(queueForReaction, ^{
             
             if (LOGGING) NSLog(@"%@ %@ join %d starting asynchronous reaction %@, input %@, mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, reaction, inputMolecules, [[NSThread currentThread] isMainThread]);
-            [reaction startReactionWithInput:inputMolecules];
+            [reaction startReactionWithInputs:inputMolecules];
         });
         
     }
     
     
 }
+
+// maintain a global set of all join definitions, including dynamically created ones.
+// each entry in the set contains a weak reference to the join.
+
 + (void) initializeGlobalSet {
     if (allCreatedJoins == nil) {
         allCreatedJoins = [NSMutableSet set];
@@ -442,7 +437,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
     if (continuation != nil) continuation();
 }
 
-- (void) cycleMainLoopForSeconds:(CGFloat)seconds {
++ (void) cycleMainLoopForSeconds:(CGFloat)seconds {
     
     NSDate *loopUntil = [NSDate dateWithTimeIntervalSinceNow:seconds];
     while ([loopUntil timeIntervalSinceNow] > 0) {

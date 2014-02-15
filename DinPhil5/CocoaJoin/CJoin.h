@@ -141,43 +141,18 @@ typedef void(^ReactionPayload)(NSArray *inputs);
 + (instancetype) joinOnMainThread:(BOOL)onMainThread reactionPriority:(ReactionPriority)priority;
 - (void) defineReactionWithInputNames:(NSArray *)inputs payload:(ReactionPayload)payload runOnMainThread:(BOOL)onMainThread;
 + (void) stopAndThen:(void (^)(void))continuation;
-
-- (void) emptyPutName:(NSString *)name;
-#define _cjMkPut(t)\
-- (void) t##Put:(t)value name:(NSString *)name;
-
-_cjMkPut(id)
-_cjMkPut(int)
-_cjMkPut(float)
-
-- (void) empty_emptyPutName:(NSString *)name; \
-- (int) empty_intPutName:(NSString *)name;
-- (void) int_emptyPut:(int)value name:(NSString *)name;
-
-#define _cjMkSEPut(s,t)\
-- (void) empty_emptyPutName:(NSString *)name; \
-- (t) s##_##t##Put:(s)value name:(NSString *)name;
-
-#define _cjMkSPut(s,t)\
-- (void) empty_emptyPutName:(NSString *)name; \
-- (t) s##_##t##Put:(s)value name:(NSString *)name;
-
-- (id) id_idPut:(id)value name:(NSString *)name;
-- (float) id_floatPut:(id)value name:(NSString *)name;
-
-+ (void) intReply:(int)value to:(CjS_A*)molecule;
-+ (void) emptyReply:(empty)value to:(CjS_A*)molecule;
-+ (void) idReply:(id)value to:(CjS_A*)molecule;
-
 + (void) cycleMainLoopForSeconds:(CGFloat)seconds;
 
 /// convenience functions to convert between id and primitive types: do we need them all?
++ (BOOL) unwrap_BOOL:(id)value;
 + (int) unwrap_int:(id)value;
 + (id) unwrap_id:(id)value;
 + (float) unwrap_float:(id)value;
++ (empty) unwrap_empty:(id)value;
 //+ (empty) unwrap_empty_empty:(id)value;
 //+ (empty) unwrap_empty_id:(id)value;
 //+ (empty) unwrap_empty_int:(id)value;
++ (id) wrap_BOOL:(BOOL)value;
 + (id) wrap_int:(int)value;
 + (id) wrap_id:(id)value;
 + (id) wrap_float:(float)value;
@@ -187,39 +162,32 @@ _cjMkPut(float)
 // Todo: implement the special reaction with JoinControl
 
 // Syntactic sugar
-#define cjFuncVar(out,m,in)  out(^m)(in)
-#define cjSlow(m,t)       cjFuncVar(void,m,t)
-#define cjFast(out, m, t)      cjFuncVar(out,m,t)
 
-#define _cjAssignRadical(m,t) m = [CjR_##t name:@#m join:_cj_LocalJoin]; (void)m;
-
-//#define cjDef(j, r...)   \
-//CJoin *_cj_LocalJoin = [CJoin joinOnMainThread:NO reactionPriority:Default]; \
-//cjSync(id,j,id) \
-//r
-#define cjDef(r...)   \
-CJoin *_cj_LocalJoin = [CJoin joinOnMainThread:NO reactionPriority:Default]; \
-r \
-_cj_LocalJoin = nil;
-
-#define cjDefUI(r...)   \
-CJoin *_cj_LocalJoin = [CJoin joinOnMainThread:YES reactionPriority:Default]; \
-r \
-_cj_LocalJoin = nil;
-
-#define cjAsync(m,t) CjR_##t * _cjAssignRadical(m,t)
-#define cjSync(out,m,in) CjR_##in##_##out * _cjAssignRadical(m,in##_##out)
-
+#define cjSlow(m,t) CjM_##t m = ^(t value){ [[CjR_##t name:@#m join:_cj_LocalJoin] put:value]; }; (void)m;
+#define cjSlowEmpty(m) CjM_empty m = ^(void){ [[CjR_empty name:@#m join:_cj_LocalJoin] put]; }; (void)m;
+#define cjFast(t_out,m,t_in) CjM_##t_in##_##t_out m = ^t_out(t_in value){ return [[CjR_##t_in##_##t_out name:@#m join:_cj_LocalJoin] put:value]; }; (void)m;
+#define cjFastEmpty(t_out,m) CjM_empty_##t_out m = ^t_out(void){ return [[CjR_empty_##t_out name:@#m join:_cj_LocalJoin] put]; }; (void)m;
 #define cjReply(m, v) [_cj_##m##_R reply:v]
+
+#define cjJoinControlFast(m) cjFast(id,m,id)
+#define cjJoinControlSlow(m) cjSlow(m,id)
+
+#define cjDefUIPriority(ui,p,r...)   \
+CJoin *_cj_LocalJoin = [CJoin joinOnMainThread:ui reactionPriority:p]; \
+r \
+_cj_LocalJoin = nil;
+
+#define cjDef(r...) cjDefUIPriority(NO, Default, r)
+#define cjDefUI(r...) cjDefUIPriority(YES, Default, r)
 
 #define _cjDefineVars(m,t,n,a,i) \
 CjR_##t *_cj_##m##_R = [a objectAtIndex:i]; \
 t n = _cj_##m##_R.value; (void) n;
 
-#define _cjBeginDefiningReaction(m...) [_cj_LocalJoin defineReactionWithInputs:@[m] payload:^(NSArray *inputs) {
+#define _cjBeginDefiningReaction(m...) [_cj_LocalJoin defineReactionWithInputNames:@[m] payload:^(NSArray *inputs) {
 
 #define cjReact1(m0, t0, n0, body...) \
-_cjBeginDefiningReaction(m0) \
+_cjBeginDefiningReaction(@#m0) \
 _cjDefineVars(m0,t0,n0,inputs,0) \
 body \
 } runOnMainThread:NO];
@@ -231,21 +199,21 @@ body \
 } runOnMainThread:YES];
 
 #define cjReact2(m0, t0, n0, m1, t1, n1, body...) \
-_cjBeginDefiningReaction(m0,m1) \
+_cjBeginDefiningReaction(@#m0,@#m1) \
 _cjDefineVars(m0,t0,n0,inputs,0) \
 _cjDefineVars(m1,t1,n1,inputs,1) \
 body \
 } runOnMainThread:NO];
 
 #define cjReact2UI(m0, t0, n0, m1, t1, n1, body...) \
-_cjBeginDefiningReaction(m0,m1) \
+_cjBeginDefiningReaction(@#m0,@#m1) \
 _cjDefineVars(m0,t0,n0,inputs,0) \
 _cjDefineVars(m1,t1,n1,inputs,1) \
 body \
 } runOnMainThread:YES];
 
 #define cjReact3(m0, t0, n0, m1, t1, n1, m2, t2, n2, body...) \
-_cjBeginDefiningReaction(m0,m1,m2) \
+_cjBeginDefiningReaction(@#m0,@#m1,@#m2) \
 _cjDefineVars(m0,t0,n0,inputs,0) \
 _cjDefineVars(m1,t1,n1,inputs,1) \
 _cjDefineVars(m2,t2,n2,inputs,2) \
@@ -253,7 +221,7 @@ body \
 } runOnMainThread:NO];
 
 #define cjReact3UI(m0, t0, n0, m1, t1, n1, m2, t2, n2, body...) \
-_cjBeginDefiningReaction(m0,m1,m2) \
+_cjBeginDefiningReaction(@#m0,@#m1,@#m2) \
 _cjDefineVars(m0,t0,n0,inputs,0) \
 _cjDefineVars(m1,t1,n1,inputs,1) \
 _cjDefineVars(m2,t2,n2,inputs,2) \
@@ -261,7 +229,7 @@ body \
 } runOnMainThread:YES];
 
 #define cjReact4(m0, t0, n0, m1, t1, n1, m2, t2, n2, m3, t3, n3, body...) \
-_cjBeginDefiningReaction(m0,m1,m2,m3) \
+_cjBeginDefiningReaction(@#m0,@#m1,@#m2,@#m3) \
 _cjDefineVars(m0,t0,n0,inputs,0) \
 _cjDefineVars(m1,t1,n1,inputs,1) \
 _cjDefineVars(m2,t2,n2,inputs,2) \
@@ -270,7 +238,7 @@ body \
 } runOnMainThread:NO];
 
 #define cjReact4UI(m0, t0, n0, m1, t1, n1, m2, t2, n2, m3, t3, n3, body...) \
-_cjBeginDefiningReaction(m0,m1,m2,m3) \
+_cjBeginDefiningReaction(@#m0,@#m1,@#m2,@#m3) \
 _cjDefineVars(m0,t0,n0,inputs,0) \
 _cjDefineVars(m1,t1,n1,inputs,1) \
 _cjDefineVars(m2,t2,n2,inputs,2) \
