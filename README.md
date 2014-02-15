@@ -11,6 +11,29 @@ For a tutorial introduction to join calculus using JoCaml, see https://sites.goo
 
 This project contains the join calculus library and an example iOS application, `DinPhil5`, that shows five "dining philosophers" taking turns thinking and eating.
 
+Version history
+---------------
+
+* Version 0.2
+
+The implementation of macros was changed to allow less verbose syntax: molecules are now injected by `a(3)`.
+
+Avoid unnecessary copying of molecule objects on injection.
+
+Produce compile errors if molecules are declared but not used as input in any reactions.
+
+Define more molecule types (`empty`, `id`, `int`, `float`).
+
+More documentation about join calculus and more examples.
+
+* Version 0.1
+
+The operational semantics of join calculus is fully implemented. 
+
+Molecules are injected with Objective-C syntax, `[a put:3]` instead of `a(3)`.
+
+"Dining philosophers" is implemented as an iPhone app.
+
 Overview of join calculus
 -------------------------
 
@@ -20,7 +43,7 @@ The programmer defines the names of allowed molecules and the type of value carr
 
 Reactions start asynchronously and concurrently, whenever the input molecules become available. For example, suppose we define a reaction like this,
 
-	consume a(x), b(y) => print x; print y; inject b(x+y)
+	consume a(x) & b(y) => print x; print y; inject b(x+y)
 
 and inject 5 copies of the molecule `a` and 3 copies of the molecule `b`, so that the "chemical soup" initially contains, say, the following molecules,
 
@@ -52,25 +75,25 @@ More details
 
 By default all reactions start _asynchronously_ (in a different thread). For this reason, injecting a molecule `a` does not immediately start a reaction even if some molecules `b` are already present in the soup. Also, reactions start in random order; if there are several reactions involving the same input molecules, a randomly chosen reaction will start. So it is the responsibility of the programmer to design the "chemistry" such that the desired values are computed in the right order, while other values are computed concurrently.
 
-Reactions do not _have_ to inject any output molecules. If a reaction does not inject any output, the input molecules will be consumed and will disappear from the soup. However, a reaction _must_ consume at least one input molecule.
+Reactions do not _have_ to inject any output molecules. If a reaction does not inject any output molecules, the input molecules will be consumed and will disappear from the soup. However, a reaction _must_ consume at least one input molecule.
 
 The reaction's "body" is written as a pure function that takes each input molecule's value as an argument. For now, we write reactions using pseudocode with keywords such as `consume`, `inject`, etc. These keywords are used here just for clarity; they do not correspond to the syntax of any existing implementation of join calculus.
 
 For instance, consider the reaction
 
-	consume a(x), b(y) => 
+	consume a(x) & b(y) => 
 		let r = compute_whatever(x,y) in
-		inject c(r),a(x),a(y),a(22); // whatever
+		inject c(r), a(x), a(y), a(22); // whatever
 
 This reaction takes `x` and `y` as arguments and computes a function, then injects some new molecules back into the soup. The values carried by the output molecules are pure functions of the values carried by the input molecules.
 
 The names of the input molecules of a reaction must be all different, and the argument names also must be all different. Thus it is not allowed to define reactions such as
 
-	consume a(x), a(y), a(z) => ... (wrong)
+	consume a(x) & a(y) & a(z) => ... (wrong)
 
 or
 
-	consume a(x), b(x), c(x) => ... (wrong)
+	consume a(x) & b(x) & c(x) => ... (wrong)
 
 This limitation ("reactions must be _linear_ in the input") is not really restricting the computational power of join calculus.
 
@@ -78,21 +101,21 @@ The definition of a set of reactions that use the same input molecules is called
 
 Reactions involving the same input molecules always have to be defined together in a single join definition. For example, consider the following two reactions,
 
-	consume a(x), b(y) => ...
-	consume b(y), c(z) => ...
+	consume a(x) & b(y) => ...
+	consume b(y) & c(z) => ...
 
 Both reactions have the molecule `b` as an input molecule, so we need to define these reactions together with declaring the new molecule names `a`, `b`, `c`.
 
-	consume a(x), b(y) => inject b(x+y)
-	consume c(x), d(y) => inject a(x-y)
+	consume a(x) & b(y) => inject b(x+y)
+	consume c(x) & d(y) => inject a(x-y)
 
 These two reactions do not have a common input molecule. For this reason, we do not necessarily have to define them together in a single join definition. However, note that the first reaction defines the name `a` for the molecule that is used in the second reaction. For this reason, the second reaction needs to be defined _after_ the first one, and the definition of the second reaction must be made within a scope where the name `a` is still visible.
 
 Once a join definition is made that involves some new molecules as inputs, the "chemistry" of the new molecules is set in stone - no further reactions can be added to the same input molecules. In other words, reactions and molecule names are defined _statically_.
 
-In join calculus, the molecule names (`a`, `b`, etc.) are syntactically function names and play the role of "injectors" for molecules. By writing `a(2)`, the programmer performs an injection of the molecule `a` with value `2` into the soup. The construction `a(2)` is, in fact, _not_ a value in the program, because it represents the "fully constructed molecule" that exists only within the "chemical soup". On the other hand, the molecule name `a` is a local value in the program, it can be given as an argument to a function, stored in an array, and so on.
+In join calculus, the molecule names (`a`, `b`, etc.) are syntactically function names and play the role of "injectors" for molecules. By writing `a(2)`, the programmer performs an injection of the molecule `a` with value `2` into the soup. The operator `inject a(2)` does not return any value (or, formally, you can say it returns an _empty_ value). So, by itself, the construction `a(2)` is _not_ a value accessible in the program, but rather it represents the "fully constructed molecule" that exists only within the "chemical soup". On the other hand, the molecule name `a` is a local (and immutable) value in the program, it can be given as an argument to a function, stored in an array, and so on.
 
-It is important to realize that molecule names are _local_ values in join calculus. These values are created whenever a new reaction is defined that uses these names as input molecules. For this reason, it is possible to encapsulate reactions safely within a local scope (say, within the scope of a function). The reactions defined for these molecules are encapsulated within the local scope and are not visible outside that scope. The outside scope cannot modify these reactions or directly access all the molecules defined inside. If some of these new molecules are needed outside the local scope, their names must be returned to the outer scope, say as return values of the function. The outer scope will then be able only to _inject_ these new molecules into the soup, but not define any new reactions for them. There is an example of this functionality below.
+It is important to realize that molecule names are _local_ values in join calculus. These values are created whenever a new reaction is defined that uses these names as input molecules. For this reason, it is possible to encapsulate reactions safely within a local scope (say, within the scope of a function). The new molecule names and the reactions defined for these molecules are all encapsulated within the local scope and are not visible outside that scope. The outside scope cannot modify these reactions or directly access all the molecules defined inside. If some of these new molecules are needed outside the local scope, their names must be returned to the outer scope, say as return values of the function. The outer scope will then be able only to _inject_ these new molecules into the soup, but not define any new reactions for them. There is an example of this functionality below.
 
 Synchronous molecules
 ---------------------
@@ -103,16 +126,16 @@ Injecting a "slow" molecule returns right away (whether reactions can start or n
 
 	reply x to m
 
-This assigns the return value `x` to the "fast" molecule `m`. This cannot be used on a "slow" molecule.
+This assigns the return value `x` to the "fast" molecule `m`. The `reply` operator cannot be used on a "slow" molecule. (So, if we see a `reply` operator, we know that it is applied to a fast molecule.)
 
-Once the `reply` operator is called, the injecting thread unblocks and the value is returned from the injection call. The reaction, meanwhile, continues (perhaps asynchronously) and may inject other molecules into the soup or "reply" to other fast molecules.
+Once the `reply` operator is called, the injecting thread unblocks and the value is returned from the injection call. Thus, the call `m()` will return the value `x`, like an ordinary, blocking function call. The reaction, meanwhile, continues (perhaps asynchronously on a different thread) and may inject other molecules into the soup or "reply" to other fast molecules.
 
 Referential transparency
 ------------------------
 
-It is important to keep in mind that join calculus is _not_ fully referentially transparent because the operators we denoted by `inject` and by `reply`, as well as "fast" molecule invocations, have side effects. 
+It is important to keep in mind that join calculus is _not_ fully referentially transparent because the operators we denoted by `inject` and by `reply`, as well as "fast" molecule invocations, have side effects (change the state of the chemical soup).
 
-The operators `inject` and `reply` are, technically speaking, functions that return an empty value - and produce side effects. These operators cannot be replaced by their return values, which is a violation of referential transparency. Nevertheless, the _order_ of these operations is not significant because the operational semantics of join calculus says that molecule injections and reactions may happen in random order. Thus, if we need to perform several `inject` and `reply` operation, together with other calculations, we may put these operations in any order, e.g.
+The operators `inject` and `reply` are, technically speaking, functions that return an empty value. These operators cannot be replaced by their return values, which is a violation of referential transparency. Nevertheless, the _order_ of these operations is not significant because the operational semantics of join calculus says that molecule injections and reactions may happen in random order. Thus, if we need to perform several `inject` and `reply` operation, together with other calculations, we may put these operations in any order, e.g.
 
 `inject a(), inject b(), let x=y+z, reply x to c(), inject d()`
 
@@ -120,7 +143,7 @@ and so on.
 
 The order of `inject` operations _is_ significant when using fast molecules. For example, consider the following reaction, where `f()` is a fast molecule and `a()` is a slow molecule:
 
-	consume a(), f() => reply 123 to f()
+	consume a() & f() => reply 123 to f()
 
 In this case, the expression `inject a(); f()` will return 123. However, the expression `f(); inject a();` may block forever if no `a()` molecules are present in the beginning. This is so because `f()` blocks until some reaction involving `f()` can start. However, there is only one such reaction, and it can start only when `a()` is present.
 
@@ -131,8 +154,8 @@ Here is how one can implement an "asynchronous counter".
 
 Define molecule `inc` with empty value and `counter` with integer value. Define a fast molecule `get` with empty value, returning int. Define two reactions:
 
- 	consume inc(), counter(n) => inject counter(n+1)
-    consume get(), counter(n) => inject counter(n), reply n to get
+ 	consume inc() & counter(n) => inject counter(n+1)
+    consume get() & counter(n) => inject counter(n), reply n to get
 
 Initially, we inject `counter(0)`. Then, at any time inject `inc()` to increment the counter and `get()` to obtain the current value.
 
@@ -153,10 +176,9 @@ Nevertheless, this implementation is brittle because the user could forget to in
 In order to fix this problem, we can define the reactions within a local scope. Pseudocode:
 
 	define_counter = function(initial_value) {
-		define counter(int), inc(); define synchronous get();
-		define reactions
-			consume inc(), counter(n) => inject counter(n+1)
-			consume get(), counter(n) => inject counter(n), reply n to get
+		// define reactions
+			consume inc() & counter(n) => inject counter(n+1)
+			consume get() & counter(n) => inject counter(n), reply n to get
 		inject counter(initial_value)
 		return (inc, get)
 	}
@@ -183,7 +205,54 @@ The result will be that a _new_ name `inc` is defined, with this new reaction. T
 
 Due to this feature, local reactions are encapsulated and can be safely used from an outer scope.
 
-Example 2: map/reduce
+Example 2: run many jobs
+------------------------
+
+Suppose we need to run, say, 100 concurrent computations and wait until they are all done, then call a certain function, `all_done()`.
+
+For each of the computations, we define a reaction with input molecule `begin(f)` where `f` is a closure that needs to be evaluated. The reaction will compute `f()` and produce a molecule `done()`. In order to initiate the computation, we will just have to inject 100 `begin` molecules, specifying the required computations as values carried by these molecules.
+
+To simplify our example, we assume that `f` does not take an argument and that it is not necessary to collect any results of the computations. (If this is not the case, the results will have to be put onto the `done` molecule; this modification is straightforward.) The reaction for `begin` looks like this:
+
+		consume begin(f) => f(); inject done();
+
+Now, it remains to wait until all reactions are finished. How can we do this? We know how many `begin` molecules we injected, and we need to make sure that exactly as many `done()` molecules have been produced.
+
+Join calculus does not allow us to query the global state of the chemical soup, to ask how many molecules of type `done` are available, or to start a reaction when exactly 100 are available. There is always only one way to do any such bookkeeping: through new reactions.
+
+So we need to introduce a new molecule, say `remain(x)`, that counts how many computations remain. Here is a simple way of doing this:
+
+		consume remain(x) & done() => inject remain(x-1)
+
+Now, if we inject a _single_ instance of `remain(100)` at the beginning, we can be sure that at most one copy of `remain` is available in the soup at any time. The reaction will consume the `done()` molecules one by one, i.e. sequentially, without any possibility for a race condition or deadlock. (We get this functionality from join calculus "for free".)
+
+The entire code now becomes two coupled reactions:
+
+		consume begin(f) => f(); inject done()
+		consume remain(x) & done() => if x==1 then all_done() else inject remain(x-1)
+		inject remain(100)
+		inject begin(...), begin(...), ...
+
+This code will work, but there are some minor problems with it:
+
+- we would like to avoid injecting the `begin` molecules by hand
+- the code is "brittle": if the programmer mistakenly forgets to inject `remain(100)`, or injects `remain(x)` with another value of `x`, or later injects several more copies of `remain` or `done()`, the reactions will not work as desired! The closure `all_done` could be called too early, or called several times, or not called at all.
+
+This useful functionality can be protected from change and at the same time encapsulated by a function that receives as arguments, say, a collection of closures to be evaluated and an `all_done` closure. The function will hide the molecule and reaction definitions within its scope.
+
+	run_all_and_report(array, all_done) =
+		{
+			consume begin(f) => f(); inject done()
+			consume remain(x) & done() => if x==1 then all_done() else inject remain(x-1)
+			inject remain(array.length)
+			inject begin(f) for each f in array
+		}
+
+It is important to note that the molecule `remain` is invisible outside this function. So the user will not be able to inject `remain` with an incorrect value or too many times.
+
+In fact, the user of this function will not be able to inject `remain`, or `begin`, or `done` at all. The only scope where these molecule names are visible is the local scope of the function `run_all_and_report`.
+
+Example 3: map/reduce
 ---------------------
 
 "Map": We need to schedule `n` computational tasks `compute_something(x)` concurrently on each element `x` of a collection `C`. "Reduce": as soon as each task is finished, we need to collect the intermediate results and merge them repeatedly together with the function `reduce(a,b)` in order to compute the final value.
@@ -203,23 +272,24 @@ We design the "chemistry" as follows:
 
 - ideally we would like to define the "reduce" reaction like this:
 
-		consume done(x), done(y) => inject done(z), where z = reduce(x,y)
+		consume done(x) & done(y) =>  (wrong!)
+			inject done(z) where z = reduce(x,y)
 
 If this were possible, we would achieve the result that all reducing operations start concurrently. However, we are not allowed to define reactions that consume two copies of the same molecule. We need to use a different molecule instead of `done(y)`, so we change this reaction to
 
-		consume done(x), done'(y) => inject done(z), where z = reduce(x,y)
+		consume done(x) & done'(y) => inject done(z) where z = reduce(x,y)
 
 To convert `done` into `done'`, we use another reaction with a `primer` molecule:
 
-		consume done(x), primer() => inject done'(x)
+		consume done(x) & primer() => inject done'(x)
 
 Now we just need to make sure that there are enough `primer` molecules in the soup, so that all intermediate results get reduced. Here is how we can reason about this situation. If we have `n` tasks, we need to call the reducer `n-1` times in total. The reducer is called once per a "primed" molecule `done'`. Therefore, we need to create `n-1` primed molecules, which is possible only if we have `n-1` copies of `primer()` in the soup. If we inject `n-1` copies of `primer()` into the soup at the beginning, the result at the end will be a single `done(z)` molecule, regardless of the order of intermediate reactions.
 
 - finally, we need to signal that all jobs are finished. A single `done(z)` molecule will carry our result `z`, but it will stay in the soup indefinitely and will not start any reactions by itself. In join calculus, we cannot define a reaction with a "guard condition", such as
 
-		consume done(x) when x > 100 => ... (wrong)
+		consume done(x) if (x > 100) => ... (wrong)
 
-Reactions start when input molecules are present, regardless of the values on the molecules. Guard conditions are not part of the language.
+Reactions start whenever input molecules are present, regardless of the values on the molecules. Guard conditions are not part of the join calculus.
 
 Therefore, we need to be able to detect, _before_ injecting the last `done` molecule, that this molecule is going to be the last one. The only way to know that is if the `done` molecule carries on itself the number of already performed reductions. Thus, we let the `done` molecule carry a pair: `done(x,k)` where `k` shows how many reductions were already performed. When a single task is done, we inject `done(x,1)` into the soup:
 
@@ -227,11 +297,11 @@ Therefore, we need to be able to detect, _before_ injecting the last `done` mole
 
 When we reduce two values to one, we add their `k` values:
 
-		consume done(x,k), done'(y,l) => inject done( reduce(x,y), k+l )
+		consume done(x,k) & done'(y,l) => inject done( reduce(x,y), k+l )
 
 Just one more refinement of this: when `k+l` becomes equal to `n`, we need to stop and signal completion. For instance, like this:
 
-		consume done(x,k), done'(y,l) => 
+		consume done(x,k) & done'(y,l) => 
 			if m==n then inject all_done(z) 
 			else inject done(z,m) 
 			where
@@ -246,8 +316,8 @@ This completes the implementation of map/reduce with fully concurrent computatio
 		define molecules begin(integer), done(integer, integer), done'(integer),
 			primer(void);
 		consume begin(x) => inject done(z, 1) where z = compute_something(x);
-		consume done(x,k), primer() => inject done'(x,k);
-		consume done(x,k), done'(y,l) => 
+		consume done(x,k) & primer() => inject done'(x,k);
+		consume done(x,k) & done'(y,l) => 
 			if k+l==n then inject all_done(z) 
 			else inject done(z,k+l) 
 			where z=reduce(x,y);
@@ -263,7 +333,7 @@ With a slightly different set of "chemical laws", it is possible to signal compl
 
 In this way, the programmer can organize the concurrent computations in any desired manner.
 
-Example 3: enable/disable
+Example 4: enable/disable
 -------------------------
 
 In an interactive application, we might have a button that starts an asynchronous computation. This can be implemented in join calculus by making the button inject a slow molecule that starts an asynchronous reaction. Now, suppose we would like to "enable" or "disable" this response: when "disabled", the molecule should not start the computation.
@@ -272,17 +342,83 @@ Here is how this functionality can be implemented in a "chemical library".
 
 Reactions are defined statically, so there is no way to modify a reaction so that, say, a new input molecule is required. All input molecules for the reaction have been already defined; now we would like to control whether this reaction starts. The only way of doing this is to control whether the required input molecule has been injected. Instead of enabling/disabling a reaction, we will enable/disable the injection of a molecule.
 
-Example 4: cancelable computation
+Given a molecule name `m`, we define new molecule names `m_on`, `m_off`, `m_state`, `request_m` and the reactions,
+
+		consume m_on() & m_state(_) => inject m_state(true)
+		consume m_off() & m_state(_) => inject m_state(false)
+		consume request_m(x) & m_state(is_on) =>
+			inject ( if is_on then m(x) else () );
+			inject m_state(is_on)
+
+Injecting `m_on` or `m_off` switches the molecule state. Te user is supposed to inject `request_m(x)` instead of directly injecting `m(x)`. This will result in injecting `m(x)` only if the molecule `m` is in the state "on". Otherwise the request to inject `m` is ignored.
+
+Other variations of this technique could put more values on the molecule `request_m`. For example, this molecule could carry not just the value `x` for the molecule `m`, but also some closures to be evaluated when the request was granted or refused. The molecule `request_m` could even carry the molecule name `m` as value and inject that molecule:
+
+		consume request(m,x) & m_state(is_on) =>
+			inject ( if is_on then m(x) else () );
+			inject m_state(is_on)
+
+Now, we can create these reactions in a local scope and return just the molecule names `m_on`, `m_off`, and `request`.
+
+	make_switch(initial) = 
+		consume m_on() & m_state(_) => inject m_state(true); reply () to m_on
+		consume m_off() & m_state(_) => inject m_state(false); reply () to m_on
+		consume request(m,x) & m_state(is_on) =>
+			inject ( if is_on then m(x) else () );
+			inject m_state(is_on)
+		inject m_state(initial) // initial value of the switch
+		(m_on, m_off, request) // return these names, but do not return m_state
+
+The user of this function is then free to pass any molecule name as the value on `request`. This molecule will be either injected or not, according to the current state of the switch.
+
+To prevent undetermined behavior in case several `m_on` and `m_off` molecules are injected at once, e.g.
+
+	m_on(); m_off(); request(...)
+
+we have designated `m_on` and `m_off` as fast molecules.
+
+Note that the current implementation allows us to use several instances of `request` at the same time. The checking of the switch state is automatically non-concurrent because there is only one copy of `m_state`, so only one reaction `request & m_state => ...` can run at any one time.
+
+Example 5: cancelable computation
 ---------------------------------
 
 When a computation takes a long time, we may need to cancel it in the middle. Since it is impossible to stop a running thread from outside, what we need to do is to split the computation into several steps and check, after every step, whether we need to proceed to the next step or the computation has been cancelled. We may also need to notify an outside scope that the computation has been aborted after a certain step, and send the partial results to the outside scope.
 
 Here is how we can implement this functionality in a "chemical library".
 
+Splitting a long computation into steps needs to be performed by the programmer. Once this is done, we can imagine having the pseudocode
+
+	y = step_1(x)
+	z = step_2(y)
+	t = step_3(z)
+	...
+
+The desired functionality should now allow programmer to rewrite this into
+
+	y = step_1(x);
+	continue_next( () => 
+		z = step_2(y);
+		continue_next( () =>
+			t = step_3(z);
+			...
+		)		
+	)
+
+and achieve a computation that will not proceed to the next step once a cancellation molecule has been injected.
+
+It seems that `continue_next` should not be a _slow_ molecule; otherwise we will be inserting unnecessary thread switching into a computation. Let us guard the call to `continue_next` by using the `make_switch` function defined in the previous example:
+
+	(m_on, m_off, request) = make_switch(true);
+	continue_next f = inject request(f, ())
+
+Any calls to `continue_next` will result in first injecting `request(f, ())`. This molecule will do nothing if the state of the switch is "off". Otherwise the closure `f` will be evaluated on its argument `()`. To cancel the computation at any time, it is sufficient to inject the (fast) molecule `m_off`.
+
 Summary of features of join calculus
 ------------------------------------
 
-Join calculus is a (mostly) purely functional, declarative model of concurrent computation. This model does not depend on any particular programming language and uses features available in most programming languages: 
+Join calculus is a (mostly) purely functional, declarative model of concurrent computation. This model does not depend on any particular programming language and can be embedded as a library in almost any host language.
+
+Join calculus only needs a few features of the host language: 
 
 * functions returning locally defined functions as values (molecule names are syntactically functions)
 * locally scoped values (no access to values defined in another scope)
@@ -290,7 +426,7 @@ Join calculus is a (mostly) purely functional, declarative model of concurrent c
 * sending values synchronously to a blocking call in another thread (for implementing fast molecules)
 * functions with side effects (for implementing `inject`, `reply`, and fast molecules)
 
-For this reason, join calculus can be implemented as a library in most programming languages.
+For this reason, join calculus can be implemented as a library in most programming languages. Any special features of the programming language (algebraic types, polymorphism, OOP, etc.) can be immediately used by the embedded join calculus library.
 
 Join calculus gives the programmer the following basic functionality:
 
@@ -299,7 +435,7 @@ Join calculus gives the programmer the following basic functionality:
 * inject molecules with values into the soup at any time (also within reactions)
 * use molecule names as locally defined values, pass them to functions, store them in local data structures
 
-The programmer can use any number of molecules and reactions. By defining the "chemistry" in a suitable way, the programmer can organize concurrent computations in any desired fashion, while remaining within the declarative and purely functional paradigm. For instance, the programmer can:
+The programmer can use any number of molecules and reactions. By defining the "chemistry" in a suitable way, the programmer can organize concurrent computations in any desired fashion while remaining within the declarative and purely functional paradigm. For instance, the programmer can:
 
 * use "fast" molecules in order to wait synchronously until certain reaction start or end
 * use "slow" molecules to receive response asynchronously from other reactions
@@ -307,6 +443,7 @@ The programmer can use any number of molecules and reactions. By defining the "c
 * use locally defined reactions to encapsulate and reuse concurrent functionality
 * create new reactions and molecules inside recursive functions, thus creating a dynamic, recursive graph of reactions at run time
 * use "higher-order" chemistry: molecules can carry values that contain _other molecule names_ or _functions of molecule names_, which then become available within a reaction and may be used to inject arbitrary molecules or to perform arbitrary computations with molecule names obtained at run time
+* create an abstract library of useful "chemical reactions" with a purely functional API
 
 Join calculus has the following advantages over other models of concurrent computation:
 
@@ -317,11 +454,12 @@ Join calculus has the following advantages over other models of concurrent compu
 3. All reactions can start concurrently and in random order.
 
 * reaction and molecule name definitions are locally scoped, immutable, type-checked, and _static_ (fixed at compile time)
-* the local scoping rules enable the _reuse_ of reactions: the programmer cannot, by mistake, destroy the functionality of any previously defined reactions (either by modifying the reactions or by injecting some molecules at wrong times or in wrong numbers)
-* each computation is a pure function in its local scope; the programmer does not manipulate shared mutable state; all state is represented by values carried by the molecules, passed automatically and implicitly from one reaction to another
+* the local scoping enables the _safe_ reuse of reactions: the programmer cannot, by mistake, destroy the functionality of any previously defined reactions (either by modifying the reactions or by injecting molecules at wrong times or in wrong numbers)
+* each computation is a pure function in its local scope; the programmer does not manipulate shared mutable state
+* state is represented by values carried by the molecules, passed automatically and implicitly from one reaction to another
 * all concurrent computations are scheduled  _implicitly_: there is no hand-written code for creating or stopping new threads, scheduling new jobs, or waiting for completion; in other words, all concurrency is _declarative_
 * one core or multicore, one threads or many threads - these low-level details are hidden from the programmer, who merely needs to inject some molecules to initiate concurrent computations
-* the programmer does not use error-prone low-level synchronization primitives, such as locks and semaphores, because their functionality is implicit in the visually clear "laws of chemistry" defined by the programmer
+* the programmer does not use error-prone low-level synchronization primitives, such as locks and semaphores; instead the programmer operates with the visually clear "laws of chemistry"
 
 Notes on the Objective-C implementation
 ---------------------------------------
@@ -340,8 +478,9 @@ For convenience, macros are provided. The example of "asynchronous counter" is i
           
           cjReact2(inc, empty, dummy, counter, int, n, // using the name "dummy" for empty value
            counter(n+1); ); // define reaction: consume inc(), counter(n), inject counter(n+1)
+           // define reaction: consume counter(n), getValue(), inject counter(n) and reply n to getValue()
           cjReact2(counter, int, n, getValue, empty_int, dummy,
-           counter(n), cjReply(getValue, n); ); // define reaction: consume counter(n), getValue(), inject counter(n) and reply n to getValue()
+          { counter(n), cjReply(getValue, n); } );
     );
     counter(0), inc(), inc();
     [CJoin cycleMainLoopForSeconds:0.2];	// allow enough time for reactions to run
@@ -487,17 +626,17 @@ The "UI" versions of the macros define reactions that are designated for the UI 
 
 Here is an example of using the reaction macros.  To convert the pseudocode such as
 
-	consume a(x), b(y), c() => do_computations(x,y); inject a(x+y), c()
+	consume a(x) & b(y) & c() => do_computations(x,y); inject a(x+y), c()
 
-into a macro call, we need to specify the names of the input molecules (`a`, `b`, `c`), the types of their arguments (`int`, `int`, `empty`), and the names of the formal parameters (`x`, `y`, `dummy`), and finally we need to write the function code for the reaction. Since there are three input molecules, we use the macro `cjReact3` and write
+into a macro call, we need to specify the names of the input molecules (`a`, `b`, `c`), the types of their arguments (`int`, `int`, `empty`), and the names of the formal parameters (`x`, `y`, `dummy`), and finally we need to write the function code for the reaction. Since there are three input molecules, we use the macro `cjReact3`:
 
-	cjReact3(a, int, x, b, int, y, c, empty, dummy, { 
-		do_computations(x,y); a(x+y), c();
-	})
+	cjReact3(a, int, x, b, int, y, c, empty, dummy,
+	{   do_computations(x,y); a(x+y), c();  }
+	)
 
-Here we have put the reaction body into its own block for visual clarity, but this is not necessary. Also, it is optional whether to inject the molecules with the comma operator or through separate statements `[a put:x+y]; [c put];`. The reaction block returns nothing.
+Here we have put the reaction body into its own block for visual clarity, but this is not necessary. Also, it is optional whether to inject the molecules with the comma operator or through separate statements `a(x+y); c();`. The reaction block always returns nothing.
 
-Note that we have used the name `dummy` for the argument of the empty type. This is necessary for technical reasons (the CPP macros are insufficiently powerful here). We are required to specify names for all arguments, even if the value is empty. So the reaction body will see a local variable named `dummy` with value equal to `[NSNull null]`.
+Note also that we have used the name `dummy` for the argument of the empty type. This is necessary for technical reasons (the CPP macros are insufficiently powerful here). We are required to specify names for all arguments, even if the value is empty. So the reaction body will see a local variable named `dummy` with value equal to `[NSNull null]`.
 
 The `reply` operator:
 - reply with value `val` to a fast molecule named `name`
@@ -509,9 +648,7 @@ The `reply` operator, as well as injections of known molecules, can be used anyw
 Current status of CocoaJoin
 ---------------------------
 
-This is version 0.2. Right now, the operational semantics of join calculus is fully implemented.
-
-The CocoaJoin version 0.2 was tested on two few examples: synchronous and asynchronous counters. In addition, the "dining philosophers" problem is implemented with a spartan GUI for 5 philosophers.
+The CocoaJoin library was tested on a few examples shown above. In addition, the "dining philosophers" problem is implemented with a spartan GUI for 5 philosophers.
 
 In the future, I might look into more features such as:
 
