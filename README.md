@@ -41,43 +41,50 @@ Join calculus realizes asynchronous computations through an "abstract chemical m
 
 The programmer defines the names of allowed molecules and the type of value carried by each molecule (say, `a` carries integer, `b` carries string, etc.). The programmer also defines reactions that are allowed between the molecules. Each reaction consumes one or more input molecules, then performs some computation using the values carried by the input molecules, and finally can produce some output molecules with some new values. The input molecules disappear from the "chemical soup" while the reaction is running, and at the end the new output molecules are injected into the "soup".
 
-Reactions start asynchronously and concurrently, whenever the input molecules become available. For example, suppose we define a reaction like this,
+Reactions start asynchronously and concurrently, whenever the input molecules become available. For now, we write reactions using pseudocode with keywords such as `consume`, `inject`, etc. These keywords and the syntax of the pseudocode were chosen only for clarity; they do not exactly correspond to the syntax of any existing implementation of join calculus.
+
+For example, suppose we define a reaction like this,
 
 	consume a(x) & b(y) => print x; print y; inject b(x+y)
 
-and inject 5 copies of the molecule `a` and 3 copies of the molecule `b`, so that the "chemical soup" initially contains, say, the following molecules,
+and then inject 5 copies of the molecule `a` and 3 copies of the molecule `b`, each with some random values:
+
+	inject a(10), a(2), a(4), a(21), a(156);
+	inject b(1), b(1), b(1);
+
+Now the "chemical soup" contains the following molecules,
 
 	a(10), a(2), a(4), a(21), a(156), b(1), b(1), b(1)
 
-Then the chemical machine will start 3 concurrent reactions between some (randomly chosen) copies of `a` and `b`. A possible result will be that the machine prints (in random order)
+Then the chemical machine can start up to three concurrent reactions between some (randomly chosen) copies of `a` and `b`. Reactions will be scheduled to run concurrently, in random order, on some (unspecified number of) background threads. A possible result will be that two reactions are started at once, the machine prints
 
 	21 1
 	2 1
-	156 1
 
-and the soup then contains
+and the soup then contains the molecules
 
-	a(10), b(3), a(4), b(22), b(157)
+	a(10), b(3), a(4), b(22), a(156), b(1)
 
-The chemical machine will not stop here, because some more reactions between `a` and `b` are possible. Reactions will continue to run concurrently in random order. In the present example, two more reactions are possible between some `a` and `b` molecules. A possible result is that the machine prints
+The chemical machine will not stop here, because some more reactions between `a` and `b` are possible. Reactions will continue to run concurrently in random order, and their input molecules are also chosen randomly. In the present example, three more reactions are possible between some `a` and `b` molecules. A possible result is that the machine prints
 
+	156 3
 	10 22
-	4 3
+	4 1
 
 and the soup now contains
 
-	b(32), b(7), b(157)
+	b(32), b(5), b(159)
 
-At this point, no more reactions are possible, and the "chemical machine" will wait. If more `a` molecules are injected, further reactions will start.
+At this point, no more reactions are possible, so the "chemical machine" will wait. If more `a` molecules are injected, further reactions will be scheduled to run.
 
 More details
 ------------
 
 By default all reactions start _asynchronously_ (in a different thread). For this reason, injecting a molecule `a` does not immediately start a reaction even if some molecules `b` are already present in the soup. Also, reactions start in random order; if there are several reactions involving the same input molecules, a randomly chosen reaction will start. So it is the responsibility of the programmer to design the "chemistry" such that the desired values are computed in the right order, while other values are computed concurrently.
 
-Reactions do not _have_ to inject any output molecules. If a reaction does not inject any output molecules, the input molecules will be consumed and will disappear from the soup. However, a reaction _must_ consume at least one input molecule.
+When a reaction is finished, it may or may not inject any output molecules into the soup. If a reaction does not inject any output molecules, the input molecules will be consumed and will disappear from the soup. However, a reaction _must_ consume at least one input molecule.
 
-The reaction's "body" is written as a pure function that takes each input molecule's value as an argument. For now, we write reactions using pseudocode with keywords such as `consume`, `inject`, etc. These keywords are used here just for clarity; they do not correspond to the syntax of any existing implementation of join calculus.
+The reaction's body is written as a pure function that takes each input molecule's value as an argument.
 
 For instance, consider the reaction
 
@@ -85,7 +92,7 @@ For instance, consider the reaction
 		let r = compute_whatever(x,y) in
 		inject c(r), a(x), a(y), a(22); // whatever
 
-This reaction takes `x` and `y` as arguments and computes a function, then injects some new molecules back into the soup. The values carried by the output molecules are pure functions of the values carried by the input molecules.
+This reaction consumes two input molecules `a` and `b`. These molecules carry values that are denoted by `x` and `y`. When the reaction starts, its body takes `x` and `y` as arguments and computes something, then injects some new molecules back into the soup. The values carried by the output molecules are functions of the values carried by the input molecules.
 
 The names of the input molecules of a reaction must be all different, and the argument names also must be all different. Thus it is not allowed to define reactions such as
 
