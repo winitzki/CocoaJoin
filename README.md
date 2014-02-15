@@ -449,8 +449,8 @@ Define a new reaction:
 
 - reactions taking a single input molecule:
 
-	cjReact1(name1, type1, var1, code...)
-	cjReact1UI(name1, type1, var1, code...)
+		cjReact1(name1, type1, var1, code...)
+		cjReact1UI(name1, type1, var1, code...)
 
 `name1` must be a newly defined molecule name (value will be created in local scope).
 `type1` is the type of the value of that molecule. For fast molecules, separate type with underscore: for example, `empty_int` or `id_id`.
@@ -461,8 +461,8 @@ Note: for molecules that carry no values, the type `empty` is used here.
 
 - reactions taking two input molecules:
 
-	cjReact2(name1, type1, var1, name2, type2, var2, code...)
-	cjReact2UI(name1, type1, var1, name2, type2, var2, code...)
+		cjReact2(name1, type1, var1, name2, type2, var2, code...)
+		cjReact2UI(name1, type1, var1, name2, type2, var2, code...)
 
 Similar macros `cjReact3`, `cjReact3UI`, `cjReact4`, and `cjReact4UI` are available. Further such macros are straightforward to implement. (See `CJoin.h`.)
 
@@ -494,7 +494,7 @@ Current status of CocoaJoin
 
 This is version 0.2. Right now, the operational semantics of join calculus is fully implemented.
 
-The CocoaJoin version 0.2 was tested on two few examples: synchronous and asynchronous counters. In addition, the "dining philosophers" problem is implemented with a barebones GUI.
+The CocoaJoin version 0.2 was tested on two few examples: synchronous and asynchronous counters. In addition, the "dining philosophers" problem is implemented with a spartan GUI for 5 philosophers.
 
 In the future, I might look into more features such as:
 
@@ -503,3 +503,7 @@ In the future, I might look into more features such as:
 Possible functions: stats (get statistics on the number of molecules and reactions), pause (do not schedule any new reactions), resume (start scheduling reactions again), clear (remove all present molecules in all reactions, stop all reactions, reply immediately to all fast molecules, and ignore requests to inject any new molecules).
 
 These global operations, as well as the corresponding local operations, can be implemented most easily via special predefined fast molecules that already have predefined reactions.
+
+* Create an XCode project for a static library containing CJoin and attendant files.
+
+* Start a "chemical library" encapsulating useful reactions and functions.
