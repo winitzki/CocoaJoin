@@ -351,30 +351,30 @@ For convenience, macros are provided. The example of "asynchronous counter" is i
 CocoaJoin modifies the model of join calculus in some inessential ways:
 
 * Only a subset of primitive types are supported for molecule values: `empty`, `int`, `float`, `id.` Similarly, the return values of fast molecules can have only these types. Here `empty` is the functionally same as NSNull.
-* Molecule names are local values of certain predefined classes such as `CjR_int`, `CjR_empty`, `CjR_id_id`, etc., depending on the types of values. (Fully constructed molecules are not available as objects, as in JoCaml.)
+* Molecule names are local values of certain predefined types such as `CjM_int`, `CjM_empty`, `CjM_id_id`, etc., depending on the types of values. (Fully constructed molecules are not directly available as objects, as in JoCaml.)
 
 Available types:
 
-	CjR_empty -- name of a slow molecule with empty value, such as inc()
-	CjR_id -- name of a slow molecule with id value, such as s(@"a")
-	CjR_int -- name of a slow molecule with int value
-	CjR_float -- name of a slow molecule with float value
-	CjR_empty_int -- name of a fast molecule with empty value, returning int
+	CjM_empty -- name of a slow molecule with empty value, such as inc()
+	CjM_id -- name of a slow molecule with id value, such as s(@"a")
+	CjM_int -- name of a slow molecule with int value
+	CjM_float -- name of a slow molecule with float value
+	CjM_empty_int -- name of a fast molecule with empty value, returning int
 
-Other types of this form: `CjR_`_t_`_`_r_  represents a name of a fast molecule carrying value of type _t_ returning a value of type _r_. In ordinary join calculus, this type would be a function _t_ -> _r_.
+Other types of this form: `CjM_`_t_`_`_r_  represents a name of a fast molecule carrying value of type _t_ returning a value of type _r_. In ordinary join calculus, this type would be a function _t_ -> _r_.
 
-* The syntax of molecule injection is simply `a(x)` or `b()`. (Note that the fully constructed molecule is not available as a separate object
+* The syntax of molecule injection is simply `a(x)` or `b()`. (These function calls return `void` and inject the molecule. A fully constructed molecule is not available as a separate object.)
 * The syntax of `reply` is `cjReply(name, value)`, where `name` must be the name of a fast molecule. (Otherwise there will be a compile-time error, since the `reply` method is only defined for fast molecules.)
 * It is not possible (due to limitations of the CPP macro processor) to make two join definitions one after another in the same local scope. Separate them with `{ ... }` or define them within different function/method scopes.
-* To make a new join definition, each new molecule name must be defined with its explicit type.
+* To make a new join definition, each new molecule name must be defined with its explicit type. If you do not define some of the new input molecules, or if you define a new input molecule but do not use it in the input, there will be a compiler error (undefined variable, or unused variable).
 
-We need to list explicitly all the newly declared input names, because otherwise we cannot generate code for defining them. (The macro processor is unable to process arrays of parameters.)
+We need to list explicitly all the newly declared input molecule names, because otherwise we cannot generate code for defining them. (The macro processor is unable to process arrays of parameters or keep track of which names were used in a list of parameters.)
 
 * Defining a reaction with an input name that has already been defined in the same local scope is impossible (it may result in a compiler error due to name clash).
 
 This is so because the definition of an input molecule name, e.g. `counter` with integer value, is equivalent in Objective-C to the declaration of a new local variable,
 
-	  void(^counter)(int) = ...
+	  CjM_int counter = ...
 
 If the name `counter` is already locally defined, it is a compile-time error to define the same name again in the same scope. No error will result if the name is redefined within another local scope.
 
