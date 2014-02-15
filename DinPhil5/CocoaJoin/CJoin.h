@@ -193,7 +193,7 @@ body \
 } runOnMainThread:NO];
 
 #define cjReact1UI(m0, t0, n0, body...) \
-_cjBeginDefiningReaction(m0) \
+_cjBeginDefiningReaction(@#m0) \
 _cjDefineVars(m0,t0,n0,inputs,0) \
 body \
 } runOnMainThread:YES];
