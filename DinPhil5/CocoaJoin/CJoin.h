@@ -163,10 +163,10 @@ typedef void(^ReactionPayload)(NSArray *inputs);
 
 // Syntactic sugar
 
-#define cjSlow(m,t) CjM_##t m = ^(t value){ [[CjR_##t name:@#m join:_cj_LocalJoin] put:value]; }; (void)m;
-#define cjSlowEmpty(m) CjM_empty m = ^(void){ [[CjR_empty name:@#m join:_cj_LocalJoin] put]; }; (void)m;
-#define cjFast(t_out,m,t_in) CjM_##t_in##_##t_out m = ^t_out(t_in value){ return [[CjR_##t_in##_##t_out name:@#m join:_cj_LocalJoin] put:value]; }; (void)m;
-#define cjFastEmpty(t_out,m) CjM_empty_##t_out m = ^t_out(void){ return [[CjR_empty_##t_out name:@#m join:_cj_LocalJoin] put]; }; (void)m;
+#define cjSlow(m,t) CjM_##t m = ^(t value){ [[CjR_##t name:@#m join:_cj_LocalJoin] put:value]; };
+#define cjSlowEmpty(m) CjM_empty m = ^(void){ [[CjR_empty name:@#m join:_cj_LocalJoin] put]; };
+#define cjFast(t_out,m,t_in) CjM_##t_in##_##t_out m = ^t_out(t_in value){ return [[CjR_##t_in##_##t_out name:@#m join:_cj_LocalJoin] put:value]; };
+#define cjFastEmpty(t_out,m) CjM_empty_##t_out m = ^t_out(void){ return [[CjR_empty_##t_out name:@#m join:_cj_LocalJoin] put]; };
 #define cjReply(m, v) [_cj_##m##_R reply:v]
 
 #define cjJoinControlFast(m) cjFast(id,m,id)
@@ -182,7 +182,7 @@ _cj_LocalJoin = nil;
 
 #define _cjDefineVars(m,t,n,a,i) \
 CjR_##t *_cj_##m##_R = [a objectAtIndex:i]; \
-t n = _cj_##m##_R.value; (void) n;
+t n = _cj_##m##_R.value; (void) n; (void) m;
 
 #define _cjBeginDefiningReaction(m...) [_cj_LocalJoin defineReactionWithInputNames:@[m] payload:^(NSArray *inputs) {
 

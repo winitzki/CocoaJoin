@@ -3,7 +3,7 @@ CocoaJoin
 
 An experimental implementation of join calculus in Objective-C.
 
-Join calculus is a formal model for purely functional, concurrent computations. Join calculus is somewhat similar to "actor model" but it is "more" purely functional.
+Join calculus is a formal model for (mostly) purely functional, concurrent computations. Join calculus is somewhat similar to the actor model, but join calculus is, so to speak, "more" purely functional.
 
 There are a few implementations of join calculus in functional programming languages such as OCaml (JoCaml), F# ("joinads"), and Scala.
 
@@ -47,8 +47,8 @@ and the soup now contains
 
 At this point, no more reactions are possible, and the "chemical machine" will wait. If more `a` molecules are injected, further reactions will start.
 
-Remarks
--------
+More details
+------------
 
 By default all reactions start _asynchronously_ (in a different thread). For this reason, injecting a molecule `a` does not immediately start a reaction even if some molecules `b` are already present in the soup. Also, reactions start in random order; if there are several reactions involving the same input molecules, a randomly chosen reaction will start. So it is the responsibility of the programmer to design the "chemistry" such that the desired values are computed in the right order, while other values are computed concurrently.
 
@@ -83,7 +83,6 @@ Reactions involving the same input molecules always have to be defined together 
 
 Both reactions have the molecule `b` as an input molecule, so we need to define these reactions together with declaring the new molecule names `a`, `b`, `c`.
 
-
 	consume a(x), b(y) => inject b(x+y)
 	consume c(x), d(y) => inject a(x-y)
 
@@ -107,6 +106,23 @@ Injecting a "slow" molecule returns right away (whether reactions can start or n
 This assigns the return value `x` to the "fast" molecule `m`. This cannot be used on a "slow" molecule.
 
 Once the `reply` operator is called, the injecting thread unblocks and the value is returned from the injection call. The reaction, meanwhile, continues (perhaps asynchronously) and may inject other molecules into the soup or "reply" to other fast molecules.
+
+Referential transparency
+------------------------
+
+It is important to keep in mind that join calculus is _not_ fully referentially transparent because the operators we denoted by `inject` and by `reply`, as well as "fast" molecule invocations, have side effects. 
+
+The operators `inject` and `reply` are, technically speaking, functions that return an empty value - and produce side effects. These operators cannot be replaced by their return values, which is a violation of referential transparency. Nevertheless, the _order_ of these operations is not significant because the operational semantics of join calculus says that molecule injections and reactions may happen in random order. Thus, if we need to perform several `inject` and `reply` operation, together with other calculations, we may put these operations in any order, e.g.
+
+`inject a(), inject b(), let x=y+z, reply x to c(), inject d()`
+
+and so on. 
+
+The order of `inject` operations _is_ significant when using fast molecules. For example, consider the following reaction, where `f()` is a fast molecule and `a()` is a slow molecule:
+
+	consume a(), f() => reply 123 to f()
+
+In this case, the expression `inject a(); f()` will return 123. However, the expression `f(); inject a();` may block forever if no `a()` molecules are present in the beginning. This is so because `f()` blocks until some reaction involving `f()` can start. However, there is only one such reaction, and it can start only when `a()` is present.
 
 Example 1: asynchronous counter
 -------------------------------
@@ -266,16 +282,17 @@ Here is how we can implement this functionality in a "chemical library".
 Summary of features of join calculus
 ------------------------------------
 
-Join calculus is a purely functional, declarative model of concurrent computation. This model does not depend on any particular programming language and uses features available in most programming languages: 
+Join calculus is a (mostly) purely functional, declarative model of concurrent computation. This model does not depend on any particular programming language and uses features available in most programming languages: 
 
-* pure functions with arguments
-* locally scoped values
-* concurrent threads
-* sending values synchronously to a blocking call in another thread
+* functions returning locally defined functions as values (molecule names are syntactically functions)
+* locally scoped values (no access to values defined in another scope)
+* concurrent threads (for scheduling reactions)
+* sending values synchronously to a blocking call in another thread (for implementing fast molecules)
+* functions with side effects (for implementing `inject`, `reply`, and fast molecules)
 
-For this reason, join calculus can be easily embedded as a library in most programming languages.
+For this reason, join calculus can be implemented as a library in most programming languages.
 
-Join calculus gives the programmer has the following basic functionality:
+Join calculus gives the programmer the following basic functionality:
 
 * define arbitrary names for molecules, with arbitrary types of values
 * jointly define several reactions with one or more input molecules
@@ -289,22 +306,22 @@ The programmer can use any number of molecules and reactions. By defining the "c
 * use "fast" molecules to receive values synchronously from other reactions
 * use locally defined reactions to encapsulate and reuse concurrent functionality
 * create new reactions and molecules inside recursive functions, thus creating a dynamic, recursive graph of reactions at run time
-* use "higher-order" chemistry: molecules can carry values that contain _other molecule names_ or _functions of molecule names_, which then become available within a reaction and may be used to inject arbitrary molecules or to perform arbitrary computations 
+* use "higher-order" chemistry: molecules can carry values that contain _other molecule names_ or _functions of molecule names_, which then become available within a reaction and may be used to inject arbitrary molecules or to perform arbitrary computations with molecule names obtained at run time
 
 Join calculus has the following advantages over other models of concurrent computation:
 
-* concurrency is declarative and simple to reason about because the operational semantics is based on just two easily visualized principles:
+* concurrency is simple to reason about because the operational semantics is based on easily visualized principles:
 
-1. A reaction starts whenever the required input molecules are present in the soup.
-2. A reaction consumes input molecules from the soup, then performs a computation, and then injects the output molecules into the soup.
+1. A reaction can start only if all of its input molecules are present in the soup.
+2. A reaction _first_ consumes the input molecules from the soup, _then_ performs some computation and injects the output molecules into the soup.
+3. All reactions can start concurrently and in random order.
 
-* reaction and molecule definitions are locally scoped and _static_
-* reactions are guaranteed to be immutable, the programmer cannot redefine a reaction by mistake or accidentally inject molecules that should not be injected
-* each computation is a pure function in a local scope, there is no global "state of the chemistry"
-* all concurrent computations are scheduled  _implicitly_: there is no hand-written code for creating or stopping new threads, scheduling new jobs, or waiting for completion
+* reaction and molecule name definitions are locally scoped, immutable, type-checked, and _static_ (fixed at compile time)
+* the local scoping rules enable the _reuse_ of reactions: the programmer cannot, by mistake, destroy the functionality of any previously defined reactions (either by modifying the reactions or by injecting some molecules at wrong times or in wrong numbers)
+* each computation is a pure function in its local scope; the programmer does not manipulate shared mutable state; all state is represented by values carried by the molecules, passed automatically and implicitly from one reaction to another
+* all concurrent computations are scheduled  _implicitly_: there is no hand-written code for creating or stopping new threads, scheduling new jobs, or waiting for completion; in other words, all concurrency is _declarative_
 * one core or multicore, one threads or many threads - these low-level details are hidden from the programmer, who merely needs to inject some molecules to initiate concurrent computations
-* the use of low-level synchronization primitives, such as locks and semaphores, is implicit in the "laws of chemistry" defined by the programmer
-* the programmer does not manipulate shared mutable state; all state is represented by values carried by the molecules, passed automatically and implicitly from one reaction to another
+* the programmer does not use error-prone low-level synchronization primitives, such as locks and semaphores, because their functionality is implicit in the visually clear "laws of chemistry" defined by the programmer
 
 Notes on the Objective-C implementation
 ---------------------------------------
