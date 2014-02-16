@@ -670,3 +670,5 @@ These global operations, as well as the corresponding local operations, can be i
 * Start a "chemical library" encapsulating useful reactions and functions.
 
 * Make sure that background reactions are scheduled even if the thread is blocked immediately after injecting some slow molecules. (This requires runloop cycling and should be done only if we are on the UI thread but the molecule comes from a join designated for a non-UI thread, or vice versa.)
+
+* Document the internals of CocoaJoin, trying to be language-agnostic, since this kind of "dynamic" implementation might be quite useful and simple to do in other languages.
