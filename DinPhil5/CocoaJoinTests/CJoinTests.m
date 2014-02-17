@@ -36,9 +36,9 @@
     
     // create new molecule names.
     
-    CjM_empty inc = ^{ [CjR_empty name:@"int" join:j]; };
+    CjM_empty inc = ^{ [[CjR_empty name:@"inc" join:j] put]; };
     CjM_int counter = ^(int value){ [[CjR_int name:@"counter" join:j] put:value]; };
-    CjM_empty_int getValue = ^int() { return [[CjR_empty_int name:@"counter" join:j] put]; };
+    CjM_empty_int getValue = ^int{ return [[CjR_empty_int name:@"getValue" join:j] put]; };
     
     // declare reactions using these molecule names.
     
@@ -52,7 +52,7 @@
         { counter(n+1); } // code given by user in macro
     } runOnMainThread:NO];
     
-    [j defineReactionWithInputNames:@[@"counter", @"get"] payload:^(NSArray *inputs) {
+    [j defineReactionWithInputNames:@[@"counter", @"getValue"] payload:^(NSArray *inputs) {
         CjR_int *_cj_counter_M = [inputs objectAtIndex:0];
         int n = _cj_counter_M.value;
         (void)n;
@@ -67,7 +67,9 @@
     
     // now we can inject the molecules and observe the results.
     
-    counter(0), inc(), inc();
+    counter(0);
+    inc();
+    inc();
     [CJoin cycleMainLoopForSeconds:0.2];
     
     int v = getValue();

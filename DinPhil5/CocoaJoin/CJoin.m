@@ -26,7 +26,9 @@ static NSMutableSet *allCreatedJoins; // this set contains weakRef objects point
 @property (strong, nonatomic) NSMutableSet *knownMoleculeNames; // NSSet of all known molecule names
 @property (assign, nonatomic) BOOL decideOnMainThread;
 - (void) injectFullMolecule:(CjR_A*)molecule;
+- (void) internalInjectFullMolecule:(CjR_A*)molecule;
 - (id)getSyncReplyTo:(CjS_A *)syncMolecule;
+
 @end
 
 
@@ -59,7 +61,12 @@ _cjMkRClassPrivate(float, assign)
     CjR_A *result = [[self alloc] init];
     result.moleculeName = name;
     result.ownerJoin = join;
-    return result;
+    if ([join.knownMoleculeNames containsObject:name]) {
+        return result;
+    } else {
+        @throw [NSString stringWithFormat:@"attempting to inject molecule '%@' but it is unknown in join #%d", name, join.joinID];
+        return nil;
+    }
 }
 - (void)putInternal {
     [self.ownerJoin injectFullMolecule:self];
@@ -437,6 +444,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
     if (continuation != nil) continuation();
 }
 
+#pragma mark Utility functions
 + (void) cycleMainLoopForSeconds:(CGFloat)seconds {
     
     NSDate *loopUntil = [NSDate dateWithTimeIntervalSinceNow:seconds];

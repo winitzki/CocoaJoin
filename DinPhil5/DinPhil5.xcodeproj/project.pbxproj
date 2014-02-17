@@ -7,6 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE1E2A4F18B29D870046E1FA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3918AAAF8E00E5B143 /* Foundation.framework */; };
+		CE1E2A5C18B29D870046E1FA /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A5218AAAF9000E5B143 /* XCTest.framework */; };
+		CE1E2A5D18B29D870046E1FA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3918AAAF8E00E5B143 /* Foundation.framework */; };
+		CE1E2A5E18B29D870046E1FA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3D18AAAF8E00E5B143 /* UIKit.framework */; };
+		CE1E2A6118B29D870046E1FA /* libCocoaJoin.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE1E2A4E18B29D870046E1FA /* libCocoaJoin.a */; };
+		CE1E2A6718B29D870046E1FA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE1E2A6518B29D870046E1FA /* InfoPlist.strings */; };
+		CE1E2A6918B29D870046E1FA /* CocoaJoinTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CE1E2A6818B29D870046E1FA /* CocoaJoinTests.m */; };
+		CE1E2A7118B2A4680046E1FA /* CJoinTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CE1E2A7018B2A4680046E1FA /* CJoinTests.m */; };
+		CE1E2A7218B2A4810046E1FA /* NSArray+OVRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A8018AAB33E00E5B143 /* NSArray+OVRandom.m */; };
+		CE1E2A7318B2A4810046E1FA /* CJoin.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6A18AAB0F400E5B143 /* CJoin.m */; };
+		CE1E2A7418B2A4810046E1FA /* NSNumber+lowercaseTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6C18AAB0F400E5B143 /* NSNumber+lowercaseTypes.m */; };
+		CE1E2A7518B2A4810046E1FA /* WeakRef.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6E18AAB0F400E5B143 /* WeakRef.m */; };
+		CE1E2A7618B2A4810046E1FA /* NSPair.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6F18AAB0F400E5B143 /* NSPair.m */; };
+		CE1E2A7718B2A69E0046E1FA /* libCocoaJoin.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE1E2A4E18B29D870046E1FA /* libCocoaJoin.a */; };
 		CEA83A3A18AAAF8E00E5B143 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3918AAAF8E00E5B143 /* Foundation.framework */; };
 		CEA83A3C18AAAF8E00E5B143 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3B18AAAF8E00E5B143 /* CoreGraphics.framework */; };
 		CEA83A3E18AAAF8E00E5B143 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3D18AAAF8E00E5B143 /* UIKit.framework */; };
@@ -19,19 +33,20 @@
 		CEA83A5518AAAF9000E5B143 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA83A3D18AAAF8E00E5B143 /* UIKit.framework */; };
 		CEA83A5D18AAAF9000E5B143 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CEA83A5B18AAAF9000E5B143 /* InfoPlist.strings */; };
 		CEA83A5F18AAAF9000E5B143 /* DinPhil5Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A5E18AAAF9000E5B143 /* DinPhil5Tests.m */; };
-		CEA83A7118AAB0F400E5B143 /* CJoin.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6A18AAB0F400E5B143 /* CJoin.m */; };
-		CEA83A7218AAB0F400E5B143 /* NSNumber+lowercaseTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6C18AAB0F400E5B143 /* NSNumber+lowercaseTypes.m */; };
-		CEA83A7318AAB0F400E5B143 /* WeakRef.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6E18AAB0F400E5B143 /* WeakRef.m */; };
-		CEA83A7418AAB0F400E5B143 /* NSPair.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A6F18AAB0F400E5B143 /* NSPair.m */; };
 		CEA83A7B18AAB10200E5B143 /* DiningPhilosophicalLogic.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A7618AAB10200E5B143 /* DiningPhilosophicalLogic.m */; };
 		CEA83A7C18AAB10200E5B143 /* DinPhilVCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A7718AAB10200E5B143 /* DinPhilVCViewController.m */; };
 		CEA83A7D18AAB10200E5B143 /* DinPhilVCViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CEA83A7818AAB10200E5B143 /* DinPhilVCViewController.xib */; };
 		CEA83A7E18AAB10200E5B143 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = CEA83A7918AAB10200E5B143 /* MainWindow.xib */; };
-		CEA83A8118AAB33E00E5B143 /* NSArray+OVRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A8018AAB33E00E5B143 /* NSArray+OVRandom.m */; };
-		CEA83A8318AAB5E400E5B143 /* CJoinTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA83A8218AAB5E300E5B143 /* CJoinTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		CE1E2A5F18B29D870046E1FA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CEA83A2E18AAAF8E00E5B143 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CE1E2A4D18B29D870046E1FA;
+			remoteInfo = CocoaJoin;
+		};
 		CEA83A5618AAAF9000E5B143 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CEA83A2E18AAAF8E00E5B143 /* Project object */;
@@ -41,7 +56,26 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		CE1E2A4C18B29D870046E1FA /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		CE1E2A4E18B29D870046E1FA /* libCocoaJoin.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCocoaJoin.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE1E2A5218B29D870046E1FA /* CocoaJoin-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CocoaJoin-Prefix.pch"; sourceTree = "<group>"; };
+		CE1E2A5B18B29D870046E1FA /* CocoaJoinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CocoaJoinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE1E2A6418B29D870046E1FA /* CocoaJoinTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CocoaJoinTests-Info.plist"; sourceTree = "<group>"; };
+		CE1E2A6618B29D870046E1FA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		CE1E2A6818B29D870046E1FA /* CocoaJoinTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CocoaJoinTests.m; sourceTree = "<group>"; };
+		CE1E2A7018B2A4680046E1FA /* CJoinTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJoinTests.m; sourceTree = "<group>"; };
 		CEA83A3618AAAF8E00E5B143 /* DinPhil5.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DinPhil5.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEA83A3918AAAF8E00E5B143 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		CEA83A3B18AAAF8E00E5B143 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -74,14 +108,33 @@
 		CEA83A7A18AAB10200E5B143 /* DinPhilVCViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DinPhilVCViewController.h; sourceTree = "<group>"; };
 		CEA83A7F18AAB33E00E5B143 /* NSArray+OVRandom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+OVRandom.h"; sourceTree = "<group>"; };
 		CEA83A8018AAB33E00E5B143 /* NSArray+OVRandom.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+OVRandom.m"; sourceTree = "<group>"; };
-		CEA83A8218AAB5E300E5B143 /* CJoinTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJoinTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		CE1E2A4B18B29D870046E1FA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE1E2A4F18B29D870046E1FA /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE1E2A5818B29D870046E1FA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE1E2A5C18B29D870046E1FA /* XCTest.framework in Frameworks */,
+				CE1E2A6118B29D870046E1FA /* libCocoaJoin.a in Frameworks */,
+				CE1E2A5E18B29D870046E1FA /* UIKit.framework in Frameworks */,
+				CE1E2A5D18B29D870046E1FA /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEA83A3318AAAF8E00E5B143 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE1E2A7718B2A69E0046E1FA /* libCocoaJoin.a in Frameworks */,
 				CEA83A3C18AAAF8E00E5B143 /* CoreGraphics.framework in Frameworks */,
 				CEA83A3E18AAAF8E00E5B143 /* UIKit.framework in Frameworks */,
 				CEA83A3A18AAAF8E00E5B143 /* Foundation.framework in Frameworks */,
@@ -101,12 +154,58 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CE1E2A5018B29D870046E1FA /* CocoaJoin */ = {
+			isa = PBXGroup;
+			children = (
+				CEA83A7F18AAB33E00E5B143 /* NSArray+OVRandom.h */,
+				CEA83A8018AAB33E00E5B143 /* NSArray+OVRandom.m */,
+				CEA83A6918AAB0F400E5B143 /* CJoin.h */,
+				CEA83A6A18AAB0F400E5B143 /* CJoin.m */,
+				CEA83A6B18AAB0F400E5B143 /* NSNumber+lowercaseTypes.h */,
+				CEA83A6C18AAB0F400E5B143 /* NSNumber+lowercaseTypes.m */,
+				CEA83A6D18AAB0F400E5B143 /* WeakRef.h */,
+				CEA83A6E18AAB0F400E5B143 /* WeakRef.m */,
+				CEA83A6F18AAB0F400E5B143 /* NSPair.m */,
+				CEA83A7018AAB0F400E5B143 /* NSPair.h */,
+				CE1E2A5118B29D870046E1FA /* Supporting Files */,
+			);
+			path = CocoaJoin;
+			sourceTree = "<group>";
+		};
+		CE1E2A5118B29D870046E1FA /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				CE1E2A5218B29D870046E1FA /* CocoaJoin-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		CE1E2A6218B29D870046E1FA /* CocoaJoinTests */ = {
+			isa = PBXGroup;
+			children = (
+				CE1E2A6818B29D870046E1FA /* CocoaJoinTests.m */,
+				CE1E2A7018B2A4680046E1FA /* CJoinTests.m */,
+				CE1E2A6318B29D870046E1FA /* Supporting Files */,
+			);
+			path = CocoaJoinTests;
+			sourceTree = "<group>";
+		};
+		CE1E2A6318B29D870046E1FA /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				CE1E2A6418B29D870046E1FA /* CocoaJoinTests-Info.plist */,
+				CE1E2A6518B29D870046E1FA /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		CEA83A2D18AAAF8E00E5B143 = {
 			isa = PBXGroup;
 			children = (
-				CEA83A6818AAB0BE00E5B143 /* CocoaJoin */,
 				CEA83A3F18AAAF8E00E5B143 /* DinPhil5 */,
 				CEA83A5818AAAF9000E5B143 /* DinPhil5Tests */,
+				CE1E2A5018B29D870046E1FA /* CocoaJoin */,
+				CE1E2A6218B29D870046E1FA /* CocoaJoinTests */,
 				CEA83A3818AAAF8E00E5B143 /* Frameworks */,
 				CEA83A3718AAAF8E00E5B143 /* Products */,
 			);
@@ -117,6 +216,8 @@
 			children = (
 				CEA83A3618AAAF8E00E5B143 /* DinPhil5.app */,
 				CEA83A5118AAAF9000E5B143 /* DinPhil5Tests.xctest */,
+				CE1E2A4E18B29D870046E1FA /* libCocoaJoin.a */,
+				CE1E2A5B18B29D870046E1FA /* CocoaJoinTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -163,7 +264,6 @@
 		CEA83A5818AAAF9000E5B143 /* DinPhil5Tests */ = {
 			isa = PBXGroup;
 			children = (
-				CEA83A8218AAB5E300E5B143 /* CJoinTests.m */,
 				CEA83A5E18AAAF9000E5B143 /* DinPhil5Tests.m */,
 				CEA83A5918AAAF9000E5B143 /* Supporting Files */,
 			);
@@ -179,26 +279,44 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		CEA83A6818AAB0BE00E5B143 /* CocoaJoin */ = {
-			isa = PBXGroup;
-			children = (
-				CEA83A7F18AAB33E00E5B143 /* NSArray+OVRandom.h */,
-				CEA83A8018AAB33E00E5B143 /* NSArray+OVRandom.m */,
-				CEA83A6918AAB0F400E5B143 /* CJoin.h */,
-				CEA83A6A18AAB0F400E5B143 /* CJoin.m */,
-				CEA83A6B18AAB0F400E5B143 /* NSNumber+lowercaseTypes.h */,
-				CEA83A6C18AAB0F400E5B143 /* NSNumber+lowercaseTypes.m */,
-				CEA83A6D18AAB0F400E5B143 /* WeakRef.h */,
-				CEA83A6E18AAB0F400E5B143 /* WeakRef.m */,
-				CEA83A6F18AAB0F400E5B143 /* NSPair.m */,
-				CEA83A7018AAB0F400E5B143 /* NSPair.h */,
-			);
-			path = CocoaJoin;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		CE1E2A4D18B29D870046E1FA /* CocoaJoin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE1E2A6E18B29D880046E1FA /* Build configuration list for PBXNativeTarget "CocoaJoin" */;
+			buildPhases = (
+				CE1E2A4A18B29D870046E1FA /* Sources */,
+				CE1E2A4B18B29D870046E1FA /* Frameworks */,
+				CE1E2A4C18B29D870046E1FA /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CocoaJoin;
+			productName = CocoaJoin;
+			productReference = CE1E2A4E18B29D870046E1FA /* libCocoaJoin.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		CE1E2A5A18B29D870046E1FA /* CocoaJoinTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE1E2A6F18B29D880046E1FA /* Build configuration list for PBXNativeTarget "CocoaJoinTests" */;
+			buildPhases = (
+				CE1E2A5718B29D870046E1FA /* Sources */,
+				CE1E2A5818B29D870046E1FA /* Frameworks */,
+				CE1E2A5918B29D870046E1FA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CE1E2A6018B29D870046E1FA /* PBXTargetDependency */,
+			);
+			name = CocoaJoinTests;
+			productName = CocoaJoinTests;
+			productReference = CE1E2A5B18B29D870046E1FA /* CocoaJoinTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		CEA83A3518AAAF8E00E5B143 /* DinPhil5 */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CEA83A6218AAAF9000E5B143 /* Build configuration list for PBXNativeTarget "DinPhil5" */;
@@ -243,6 +361,9 @@
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = "Sergei Winitzki";
 				TargetAttributes = {
+					CE1E2A5A18B29D870046E1FA = {
+						TestTargetID = CE1E2A4D18B29D870046E1FA;
+					};
 					CEA83A3518AAAF8E00E5B143 = {
 						DevelopmentTeam = J5CPW73CNB;
 					};
@@ -265,11 +386,21 @@
 			targets = (
 				CEA83A3518AAAF8E00E5B143 /* DinPhil5 */,
 				CEA83A5018AAAF9000E5B143 /* DinPhil5Tests */,
+				CE1E2A4D18B29D870046E1FA /* CocoaJoin */,
+				CE1E2A5A18B29D870046E1FA /* CocoaJoinTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		CE1E2A5918B29D870046E1FA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE1E2A6718B29D870046E1FA /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEA83A3418AAAF8E00E5B143 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -292,19 +423,35 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		CE1E2A4A18B29D870046E1FA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE1E2A7218B2A4810046E1FA /* NSArray+OVRandom.m in Sources */,
+				CE1E2A7518B2A4810046E1FA /* WeakRef.m in Sources */,
+				CE1E2A7418B2A4810046E1FA /* NSNumber+lowercaseTypes.m in Sources */,
+				CE1E2A7618B2A4810046E1FA /* NSPair.m in Sources */,
+				CE1E2A7318B2A4810046E1FA /* CJoin.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE1E2A5718B29D870046E1FA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE1E2A6918B29D870046E1FA /* CocoaJoinTests.m in Sources */,
+				CE1E2A7118B2A4680046E1FA /* CJoinTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEA83A3218AAAF8E00E5B143 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CEA83A7118AAB0F400E5B143 /* CJoin.m in Sources */,
-				CEA83A8118AAB33E00E5B143 /* NSArray+OVRandom.m in Sources */,
 				CEA83A4A18AAAF8F00E5B143 /* AppDelegate.m in Sources */,
-				CEA83A7418AAB0F400E5B143 /* NSPair.m in Sources */,
 				CEA83A4618AAAF8E00E5B143 /* main.m in Sources */,
 				CEA83A7C18AAB10200E5B143 /* DinPhilVCViewController.m in Sources */,
 				CEA83A7B18AAB10200E5B143 /* DiningPhilosophicalLogic.m in Sources */,
-				CEA83A7218AAB0F400E5B143 /* NSNumber+lowercaseTypes.m in Sources */,
-				CEA83A7318AAB0F400E5B143 /* WeakRef.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,13 +460,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				CEA83A5F18AAAF9000E5B143 /* DinPhil5Tests.m in Sources */,
-				CEA83A8318AAB5E400E5B143 /* CJoinTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		CE1E2A6018B29D870046E1FA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CE1E2A4D18B29D870046E1FA /* CocoaJoin */;
+			targetProxy = CE1E2A5F18B29D870046E1FA /* PBXContainerItemProxy */;
+		};
 		CEA83A5718AAAF9000E5B143 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = CEA83A3518AAAF8E00E5B143 /* DinPhil5 */;
@@ -328,6 +479,14 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		CE1E2A6518B29D870046E1FA /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				CE1E2A6618B29D870046E1FA /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 		CEA83A4218AAAF8E00E5B143 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -347,6 +506,82 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		CE1E2A6A18B29D880046E1FA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				DSTROOT = /tmp/CocoaJoin.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CocoaJoin/CocoaJoin-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		CE1E2A6B18B29D880046E1FA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				DSTROOT = /tmp/CocoaJoin.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CocoaJoin/CocoaJoin-Prefix.pch";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		CE1E2A6C18B29D880046E1FA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CocoaJoin/CocoaJoin-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "CocoaJoinTests/CocoaJoinTests-Info.plist";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		CE1E2A6D18B29D880046E1FA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CocoaJoin/CocoaJoin-Prefix.pch";
+				INFOPLIST_FILE = "CocoaJoinTests/CocoaJoinTests-Info.plist";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
 		CEA83A6018AAAF9000E5B143 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -431,6 +666,7 @@
 				GCC_PREFIX_HEADER = "DinPhil5/DinPhil5-Prefix.pch";
 				INFOPLIST_FILE = "DinPhil5/DinPhil5-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -446,6 +682,7 @@
 				GCC_PREFIX_HEADER = "DinPhil5/DinPhil5-Prefix.pch";
 				INFOPLIST_FILE = "DinPhil5/DinPhil5-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -496,6 +733,22 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		CE1E2A6E18B29D880046E1FA /* Build configuration list for PBXNativeTarget "CocoaJoin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CE1E2A6A18B29D880046E1FA /* Debug */,
+				CE1E2A6B18B29D880046E1FA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		CE1E2A6F18B29D880046E1FA /* Build configuration list for PBXNativeTarget "CocoaJoinTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CE1E2A6C18B29D880046E1FA /* Debug */,
+				CE1E2A6D18B29D880046E1FA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		CEA83A3118AAAF8E00E5B143 /* Build configuration list for PBXProject "DinPhil5" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -512,6 +765,7 @@
 				CEA83A6418AAAF9000E5B143 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		CEA83A6518AAAF9000E5B143 /* Build configuration list for PBXNativeTarget "DinPhil5Tests" */ = {
 			isa = XCConfigurationList;
@@ -520,6 +774,7 @@
 				CEA83A6718AAAF9000E5B143 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
