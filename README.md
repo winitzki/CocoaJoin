@@ -14,6 +14,16 @@ This project contains the join calculus library and an example iOS application, 
 Version history
 ---------------
 
+* Version 0.2.1
+
+CocoaJoin is now compiled as a static library.
+
+Four tests pass, including a test that does not use macros.
+
+Throwing a fatal exception at runtime if the user injects a molecule that has not been defined as input molecule for a reaction.
+
+Added a test to make sure that background reactions have been scheduled even if the thread is blocked immediately after injecting some slow molecules.
+
 * Version 0.2
 
 The implementation of macros was changed to allow less verbose syntax: molecules are now injected by `a(3)`.
@@ -657,7 +667,7 @@ Current status of CocoaJoin
 
 The CocoaJoin library was tested on a few examples shown above. In addition, the "dining philosophers" problem is implemented with a spartan GUI for 5 philosophers.
 
-In the future, I might look into more features such as:
+Roadmap for the future:
 
 * Define special global methods for controlling the "chemical machine" as a whole, or for controlling specific local join definitions.
 
@@ -665,10 +675,8 @@ Possible functions: stats (get statistics on the number of molecules and reactio
 
 These global operations, as well as the corresponding local operations, can be implemented most easily via special predefined fast molecules that already have predefined reactions.
 
-* Create an XCode project for a static library containing CJoin and attendant files.
-
 * Start a "chemical library" encapsulating useful reactions and functions.
 
-* Make sure that background reactions are scheduled even if the thread is blocked immediately after injecting some slow molecules. (This requires runloop cycling and should be done only if we are on the UI thread but the molecule comes from a join designated for a non-UI thread, or vice versa.)
-
 * Document the internals of CocoaJoin, trying to be language-agnostic, since this kind of "dynamic" implementation might be quite useful and simple to do in other languages.
+
+* Refactor the API so that the types for molecules are introspected, and the reaction block receives correct arguments via currying and helper blocks. (Not sure if this will even work in Objective-C but worth investigating.)

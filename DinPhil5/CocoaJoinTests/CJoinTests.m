@@ -74,7 +74,7 @@
     
     int v = getValue();
     
-    XCTAssertEqual(v, 2, @"async counter increased twice yields 2");
+    XCTAssertEqual(v, 2, @"async counter increased twice yields 2 (using no macros)");
 }
 
 - (void) testExample2 {
@@ -91,11 +91,11 @@
     );
     
     counter(0), inc(), inc();
-    [CJoin cycleMainLoopForSeconds:0.2];
+    [CJoin cycleMainLoopForSeconds:0.2]; // make sure the inc() molecules have been consumed...
     
     int v = getValue();
     
-    XCTAssertEqual(v, 2, @"async counter increased twice yields 2");
+    XCTAssertEqual(v, 2, @"async counter increased twice yields 2 (using macros and background threads)");
 }
 - (void) testExample3 {
     cjDefUI(cjSlowEmpty(inc)
@@ -106,12 +106,13 @@
             cjReact2UI(counter, int, n, getValue, empty_int, dummy, { counter(n); cjReply(getValue, n); } );
             )
     counter(0), inc(), inc();
+    // we should not need to cycle the UI thread because all reactions and the join are running on the UI thread.
     int v = getValue();
     
-    XCTAssertEqual(v, 2, @"sync counter increased twice yields 2");
+    XCTAssertEqual(v, 2, @"sync counter increased twice yields 2, all on UI thread");
 }
-- (void) testExample4 { // run concurrent tasks
-    int total = 3;
+- (void) testExample4 { // run 20 concurrent tasks
+    int total = 20;
     cjDef(cjSlow(begin, int)
           cjSlow(done, int)
           cjSlow(acc, int)
@@ -126,6 +127,8 @@
     counter(0); acc(0);
     for (int i=1; i <= total; i++) begin(i);
 
+    // we have scheduled some background reactions, now let's block this thread and wait for the final results.
+    // since all reactions are on non-UI thread, we do not need to cycle the UI thread here.
     int v = getValue();
     
     XCTAssertEqual(v, total*(total+1)/2, @"adding numbers asynchronously is correct");

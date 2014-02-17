@@ -2,7 +2,7 @@
 //  CJoin.h
 //  Copyright (c) 2014 Sergei Winitzki. All rights reserved.
 //
-
+// Version 0.2.1
 
 @class CJoin;
 
