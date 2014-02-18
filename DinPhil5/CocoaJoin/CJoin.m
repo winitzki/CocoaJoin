@@ -10,7 +10,7 @@
 #import "NSNumber+lowercaseTypes.h"
 #import "WeakRef.h"
 
-#define LOGGING YES
+#define LOGGING NO
 
 static NSMutableSet *allCreatedJoins; // this set contains weakRef objects pointing to CJoin objects
 
@@ -107,7 +107,6 @@ _cjMkRImpl(float)
 
 @interface CjS_A()
 @property (strong, nonatomic) dispatch_semaphore_t syncSemaphore;
-//@property (strong, nonatomic) CJoin *ownerJoin;
 @property (strong, nonatomic) NSString *name;
 @property (strong, nonatomic) id value;
 @property (strong, nonatomic) id resultValue;
@@ -295,7 +294,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
     
     BOOL isMainThread = [[NSThread currentThread] isMainThread];
     if (isMainThread && self.decideOnMainThread) {
-//        if (LOGGING) NSLog(@"%@ %@, join %d, inject molecule %@ on mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, moleculeName, isMainThread);
+        if (LOGGING) NSLog(@"%@ %@, join %d, inject molecule %@ on mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, molecule.moleculeName, isMainThread);
         [self internalInjectFullMolecule:molecule];
     } else {
         if (LOGGING) NSLog(@"%@ %@, join %d, scheduling the injection asynchronously, mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, isMainThread);
@@ -365,7 +364,8 @@ _cjMkSPrivateAndImpl(int, int, assign)
 }
 
 
-/// internal function: dispatch the given reaction on the appropriate queue
+/// internal function: dispatch the given reaction on the appropriate queue.
+/// argument: a pair (CjReaction, input molecules)
 - (void) dispatchReaction:(NSPair *)reactionWithInput {
     
     BOOL isMainThread = [[NSThread currentThread] isMainThread];
