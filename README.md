@@ -7,9 +7,9 @@ Join calculus is a formal model for (mostly) purely functional, concurrent compu
 
 There are a few implementations of join calculus in functional programming languages such as OCaml ("JoCaml"), F# ("joinads"), and Scala ("scalajoins").
 
-For a tutorial introduction to join calculus using JoCaml, see https://sites.google.com/site/winitzki/tutorial-on-join-calculus-and-its-implementation-in-ocaml-jocaml
+For a tutorial introduction to join calculus and several examples using JoCaml, see https://sites.google.com/site/winitzki/tutorial-on-join-calculus-and-its-implementation-in-ocaml-jocaml
 
-This project contains the join calculus library and an example iOS application, `DinPhil5`, that shows five "dining philosophers" taking turns thinking and eating.
+This project contains the join calculus library and an example iOS application, `DinPhil5`, that simulates five "dining philosophers" taking turns thinking and eating. The asynchronous logic of this iOS application is implemented as a declarative, purely functional program in join calculus.
 
 Version history
 ---------------
@@ -20,7 +20,7 @@ CocoaJoin is now compiled as a static library.
 
 Four tests pass, including a test that does not use macros.
 
-Throwing a fatal exception at runtime if the user injects a molecule that has not been defined as input molecule for a reaction.
+The library will throw a fatal exception at runtime if the user injects a molecule that has not been defined as input molecule for a reaction.
 
 Added a test to make sure that background reactions have been scheduled even if the thread is blocked immediately after injecting some slow molecules.
 
@@ -49,26 +49,26 @@ A brief tutorial on join calculus
 
 Join calculus realizes asynchronous computations through an "abstract chemical machine". The chemical machine performs computations by simulating "chemical reactions" between "molecules". Molecules are objects labeled by a name (`a`, `b`, `c`, `incr`, `counter` and so on). Each molecule carries a _value_ on itself (an integer, a string, an object, etc.). In join calculus, this is denoted by `a(123)`, `b("yes")`, etc. Molecules can, of course, carry a tuple of several values, which will be denoted by `a(1,2)` etc.
 
-The programmer defines the names of allowed molecules and the type of value carried by each molecule (say, `a` carries integer, `b` carries string, etc.). The programmer also defines reactions that are allowed between the molecules. Each reaction consumes one or more input molecules, then performs some computation using the values carried by the input molecules, and finally can produce some output molecules with some new values. The input molecules disappear from the "chemical soup" while the reaction is running, and at the end the new output molecules are injected into the "soup".
+The programmer defines the names of allowed molecules and the type of value carried by each molecule (say, `a` carries integer, `b` carries string, etc.). The programmer also defines all the reactions that can happen to these molecules. Each reaction consumes one or more input molecules, then performs some computation using the values carried by the input molecules, and finally can produce some output molecules with some new values. The input molecules disappear from the "chemical soup" while the reaction is running, and at the end the new output molecules are injected into the "soup".
 
-For now, we write reactions using pseudocode with keywords such as `consume`, `inject`, etc. These keywords and the syntax of the pseudocode were chosen only for clarity; they do not exactly correspond to the syntax of any existing implementation of join calculus.
+Reactions start asynchronously and concurrently, whenever the required input molecules become available. One can imagine that the "soup" is constantly being "stirred", so that molecules move around randomly and eventually meet other molecules to start reactions with them.
 
-Reactions start asynchronously and concurrently, whenever the input molecules become available. One can imagine that the "soup" is constantly being "stirred", so that molecules move around randomly and eventually meet other molecules to start reactions with them.
+For now, we will write reactions using an easy-to-understand pseudocode with keywords such as `consume`, `inject`, etc. These keywords and the syntax of the pseudocode were chosen only for clarity; they do not exactly correspond to the syntax of any existing implementation of join calculus.
 
-For example, suppose we define a reaction like this,
+For example, suppose we define a single reaction like this,
 
 	consume a(x) & b(y) => print x; print y; inject b(x+y)
 
-and then inject 5 copies of the molecule `a` and 3 copies of the molecule `b`, each with some random values:
+and let's suppose that no other reactions can consume `a` or `b`. Having defined this reaction, we can inject 5 copies of the molecule `a` and 3 copies of the molecule `b`, each with some random values, for example:
 
 	inject a(10), a(2), a(4), a(21), a(156);
 	inject b(1), b(1), b(1);
 
-Now the "chemical soup" contains the following molecules,
+Now the "chemical soup" contains the following molecules:
 
 	a(10), a(2), a(4), a(21), a(156), b(1), b(1), b(1)
 
-Then the chemical machine can start up to three concurrent reactions between some (randomly chosen) copies of `a` and `b`. Reactions will be scheduled to run concurrently, in random order, on some (unspecified number of) background threads. The order in which molecules were injected does not directly affect the order in which reactions are started, and does not determine which of the molecules will be consumed first. A possible behavior of the machine is that two reactions are started at once, the machine prints
+At this point, the chemical machine could start up to three concurrent reactions between some (randomly chosen) pairs of `a` and `b`. Reactions are scheduled to run in random order, using some (unspecified number of) concurrent threads. The order in which molecules were injected does not directly affect the order in which reactions are started, and does not determine which of the molecules will be consumed first. All these choices are up to the implementation of the "chemical machine" runtime. So, for example, a possible behavior of the "chemical machine" is that _two_ concurrent reactions are started, the machine prints
 
 	21 1
 	2 1
@@ -87,24 +87,32 @@ and the soup now contains
 
 	b(32), b(5), b(159)
 
-At this point, no more reactions are possible, so the "chemical machine" will wait. If more `a` molecules are injected, further reactions will be scheduled to run.
+At this point, no more reactions are possible, because there are only `b` molecules, but a reaction requires a pair of `a` and `b`. So the "chemical machine" will wait. If more `a` molecules are injected, further reactions will be scheduled to run.
 
 Further details
 ---------------
 
-By default all reactions start _asynchronously_ (on a background thread). For this reason, injecting a molecule `a` does not immediately start a reaction even if some molecules `b` are already present in the soup. Also, reactions start in random order; if there are several reactions involving the same input molecules, a randomly chosen reaction will start. If several copies of the input molecules are available, the reaction will consume randomly chosen copies. So it is the responsibility of the programmer to design the "chemistry" such that the desired values are computed in the right order, while other values are computed concurrently.
+By default all reactions start _asynchronously_ (they are scheduled on a background thread). For this reason, injecting a molecule `a` does not immediately start a reaction even if some molecules `b` are already present in the soup. 
+
+Once the required input molecules are available, a reaction will be scheduled to start. If several different reactions become possible with the present molecules, one of the reactions will be chosen at random and scheduled. Since the input molecules for that reaction are consumed, other competing reactions may get delayed by this.
+
+If several copies of the input molecules are available, the reaction will consume randomly chosen copies of the input molecules. Injecting molecules is _not_ similar to sending messages to a "mailbox" or a "channel" because reactions _cannot_ inspect the molecules in the order they were injected. The chemical machine will always see all molecules present at a given time, regardless of the order of injection. A reaction expecting input molecules `a` and `b` can start whenever _some_ copies of `a` and `b` are present. Reactions will not preferentially consume molecules that were injected earlier.
+
+So it is the responsibility of the programmer to design the "chemistry" such that the desired values are computed in the right order, and to organize certain computations sequentially or concurrently as required. The programmer is free to define any number of molecules and reactions. Below we will see several examples of join calculus programming.
 
 When a reaction is finished, it may or may not inject any output molecules into the soup. If a reaction does not inject any output molecules, the input molecules will be consumed and will disappear from the soup. However, a reaction _must_ consume at least one input molecule.
 
-The reaction's body is written as a pure function that takes each input molecule's value as an argument.
+The reaction's body is written as a function that takes each input molecule's value as an argument. The reaction body can then compute some values and inject new molecules carrying these values.
 
 For instance, consider the reaction
 
 	consume a(x) & b(y) => 
-		let r = compute_whatever(x,y) in
+		int r = compute_whatever(x,y);
 		inject c(r), a(x), a(y), a(22); // whatever
 
-This reaction consumes two input molecules `a` and `b`. These molecules carry values that are denoted by `x` and `y`. When the reaction starts, its body takes `x` and `y` as arguments and computes something, then injects some new molecules back into the soup. The values carried by the output molecules are functions of the values carried by the input molecules.
+This reaction consumes two input molecules `a` and `b`. These molecules carry values that are denoted by the pattern variables `x` and `y` in the `consume` pattern. When the reaction starts, its body takes `x` and `y` as arguments and computes something, then injects some new molecules back into the soup. The values carried by the output molecules are functions of the values carried by the input molecules.
+
+Also note that, in this example, the reaction injects a molecule `c`, - a molecule that was not consumed by this reaction. This is freely permitted, as long as the molecule name `c` is defined within the lexical scope of this code. For instance, `c` could be an input molecule defined by another reaction jointly defined with this one; also, `c` could be a _function parameter_ passed to the local scope. Molecule names such as `c` are ordinary (and immutable) values in the program.
 
 The names of the input molecules of a reaction must be all different, and the argument names also must be all different. Thus it is not allowed to define reactions such as
 
@@ -116,25 +124,37 @@ or
 
 This limitation ("reactions must be _linear_ in the input") is not really restricting the computational power of join calculus.
 
-The definition of a set of reactions that use the same input molecules is called a *join definition*. More precisely, a join definition defines at the same time the names of the input molecules and all the reactions involving these input molecules. The names of the input molecules are treated as _new_ local values, shadowing any previously visible definition of these names.
+The definition of a set of reactions that use some combinations of the same input molecules is called a *join definition*. More precisely, a join definition defines _at the same time_ the names of the input molecules and all the reactions involving these input molecules. The names of the input molecules are treated as _new_ local values, shadowing any previously visible definition of these names.
 
-Reactions involving the same input molecules always have to be defined together in a single join definition. For example, consider the following two reactions,
+In join calculus, reactions involving (some combinations of) the same input molecules always _have_ to be defined together in a single join definition. For example, consider the following two reactions,
 
 	consume a(x) & b(y) => ...
 	consume b(y) & c(z) => ...
 
-Both reactions have the molecule `b` as an input molecule, so we need to define these reactions together with declaring the new molecule names `a`, `b`, `c`.
+Both reactions have the molecule `b` as an input molecule, so we need to define these reactions together in a single join definition. This join definition will also declare the new molecule names `a`, `b`, `c`.
 
 	consume a(x) & b(y) => inject b(x+y)
 	consume c(x) & d(y) => inject a(x-y)
 
-These two reactions do not have a common input molecule. For this reason, we do not necessarily have to define them together in a single join definition. However, note that the first reaction defines the name `a` for the molecule that is used in the second reaction. For this reason, the second reaction needs to be defined _after_ the first one, and the definition of the second reaction must be made within a scope where the name `a` is still visible.
+These two reactions do not have a common input molecule. For this reason, we do not necessarily have to define them together in a single join definition. However, note that the first reaction defines the name `a` while the second reaction uses this name to inject a molecule `a(x-y)`. It is important to realize that a molecule can be injected only if its name is visible in the current lexical scope. For this reason, the second reaction needs to be defined _after_ the first one, and the definition of the second reaction must be made within a scope where the name `a` is still visible.
 
-Once a join definition is made that involves some new molecules as inputs, the "chemistry" of the new molecules is set in stone - no further reactions can be added to the same input molecules. In other words, reactions and molecule names are defined _statically_.
+Defining a single reaction like this,
 
-In join calculus, the molecule names (`a`, `b`, etc.) are syntactically function names and play the role of "injectors" for molecules. By writing `a(2)`, the programmer performs an injection of the molecule `a` with value `2` into the soup. The operator `inject a(2)` does not return any value (or, formally, you can say it returns an _empty_ value). So, by itself, the construction `a(2)` is _not_ a value accessible in the program, but rather it represents the "fully constructed molecule" that exists only within the "chemical soup". On the other hand, the molecule name `a` is a local (and immutable) value in the program, it can be given as an argument to a function, stored in an array, and so on.
+	consume a(x) & b(y) => inject c(x+y+1)
 
-It is important to realize that molecule names are _local_ values in join calculus. These values are created whenever a new reaction is defined that uses these names as input molecules. For this reason, it is possible to encapsulate reactions safely within a local scope (say, within the scope of a function). The new molecule names and the reactions defined for these molecules are all encapsulated within the local scope and are not visible outside that scope. The outside scope cannot modify these reactions or directly access all the molecules defined inside. If some of these new molecules are needed outside the local scope, their names must be returned to the outer scope, say as return values of the function. The outer scope will then be able only to _inject_ these new molecules into the soup, but not define any new reactions for them. There is an example of this functionality below.
+is invalid in a scope where `c` is not a visible local value of the correct type (the type of molecule names with value of integer type). Such a reaction defines `a` and `b` but _uses_ the value `c`. So this code is invalid just as a function 
+
+	function (x,y) { return c(x+y); }
+
+is invalid in a scope where `c` is undefined.
+
+Once a join definition is made and some new molecules have been defined, the "chemistry" of the new molecules is set in stone - no further reactions can be added to the same input molecules. In other words, reactions and molecule names are defined _statically_.
+
+In join calculus, the molecule names (`a`, `b`, etc.) are syntactically _functions_ and play the role of "injectors" for molecules. By writing `inject a(2)`, the programmer performs an injection of the molecule `a` with value `2` into the soup. The operator `inject a(2)` does not return any value (or, formally, you can say it returns an _empty_ value). So, by itself, the molecule `a(2)` is _not_ a value accessible in the program. Rather, the syntax `a(2)` represents the "fully constructed molecule" that has been injected into the "chemical soup".
+
+On the other hand, the molecule name `a` is a local (and immutable) value in the program, it can be given as an argument to a function, stored in an array, and so on.
+
+Footnote: In the Objective-C implementation, the keyword `inject` is not used, and the syntax `a(2)` directly injects the molecule `a` with value `2`. An object representing a "fully constructed molecule" is not directly available to the programmer.
 
 Synchronous molecules
 ---------------------
@@ -170,6 +190,16 @@ Within the scope of the reaction, however, the `reply` operation is a side effec
 
 In this way, the programmer is automatically protected from race conditions and deadlocks, while being able freely to call `getStatus()` from several different threads (i.e. from different reactions) concurrently. The molecule `enabled` is consumed by the reaction and _disappears from the soup_ while the reaction is running (this is the operational semantics of join calculus). For this reason, it is not possible that some other reaction consumes `enabled` and injects a different `enabled` while a reply to `getStatus` is being sent.
 
+Local scope
+-----------
+
+It is important to realize that molecule names are _local_ values in the program. These values are declared whenever a new reaction is defined that uses these names as _input_ molecules.
+
+Suppose we defined certain molecules and reactions within a function (which has its local scope). The correct functionality of this "chemistry" will usually depend on having a certain number of molecules injected, but no other molecules, and a certain number of reactions defined, but no other reactions. The functionality can be broken if just one more molecule were erroneously injected.
+
+Now, the new molecule names and the reactions defined for these molecules are visible within the local scope but not visible outside that scope. The outside scope cannot break the functionality by modifying these reactions or directly injecting the molecules defined inside.
+
+If some of these new molecules are needed outside the local scope, their names must be returned to the outer scope, say as return values of the function that defines the reactions. The outer scope will then be able only to _inject_ these new molecules into the soup. It will remain impossible to define any new reactions for these molecules, or to inject molecules whose names were not exposed. In this way, we guarantee that the functionality can be used safely within any outer scope. There will be examples of this encapsulation below.
 
 Example 1: asynchronous counter
 -------------------------------
@@ -193,9 +223,9 @@ For example,
 
 will assign `2` to `x`, as long as we wait long enough for the reactions to start.
 
-The operational semantics of join calculus guarantees that the molecule `counter` disappears from the soup whenever each reaction starts. For this reason, it is possible to inject many copies of `inc()` simultaneously; there is no problem with concurrent updates of the `counter` value, and it does not matter in which order the reactions are started.
+The operational semantics of join calculus guarantees that the molecule `counter` disappears from the soup whenever each reaction starts, and appears only after incrementing the value. For this reason, it is possible to inject many copies of `inc()` simultaneously, and there is no problem with concurrent updates of the `counter` value. (Of course, this depends on the commutativity of addition: it does not matter in which order the reactions are started.) Each reaction consumes `counter` and injects it back, ready to be consumed by another reaction. Eventually, all `inc()` molecules will be consumed, one by one.
 
-Nevertheless, this implementation is "brittle" because the user could forget to inject the `counter(0)` molecule at the beginning of the program, and then no reactions will ever run and the call to `get` will block forever. The user could also, by mistake, inject several copies of `counter` into the soup, and then the results of `get` will be unpredictable.
+Nevertheless, this implementation is "brittle" because the user could forget to inject the `counter(0)` molecule at the beginning of the program, and then no reactions will ever run, and the call to `get` will block forever. The user could also, by mistake, inject several copies of `counter` into the soup, and then the results of `get` will be unpredictable.
 
 In order to fix this problem, we can define the reactions within a local scope. Pseudocode:
 
@@ -203,29 +233,45 @@ In order to fix this problem, we can define the reactions within a local scope. 
 		// define reactions
 			consume inc() & counter(n) => inject counter(n+1)
 			consume get() & counter(n) => inject counter(n), reply n to get
+			
 		inject counter(initial_value)
 		return (inc, get)
 	}
 	// outer scope
 
 	(inc, get) = define_counter(0)
+	// counter(0) has been already injected, can use it now
+	inject inc()
+	inject inc()
+	usleep(200000) // let the threads churn for 0.2 seconds, should be enough.
+	int x = get(); // most probably, this returns 2
 
-	inc()
-	inc()
-	usleep(200000)
-	int x = get();
+The function `define_counter` returns a pair of two molecule names, `inc` and `get`, defined within the local scope but now usable outside. The outer scope can then inject `inc()` to increment the counter asynchronously, or call `get()` to obtain the current value synchronously.
 
-The function `define_counter` returns a pair of two molecule names, `inc` and `get`, defined within the local scope. The outer scope can then call inc() to increment the counter asynchronously, and get() to obtain the current value synchronously.
+The molecule `counter` is also defined within the local scope of `define_counter`, but the name `counter` is not returned to the outer scope. So the outer scope cannot inject `counter`. This prevents the user from injecting `counter` incorrectly or making any other mistakes using this functionality.
 
-The molecule `counter` is also defined within the local scope but is not returned. So the outer scope cannot make mistakes using the counter's functionality.
+The function `define_counter` defines two reactions, which constitute the "join definition" that determines the "chemistry" of the input molecules `inc`, `get`, and `counter`. The "chemistry" is defined _statically_, which means that:
 
-The function `define_counter` defines two reactions, which constitute the "join definition" that determines the "chemistry" of the input molecules `inc`, `get`, and `counter`. The "chemistry" is defined statically: After this definition, the reactions cannot be modified, and the user cannot add new reactions that _consume_ `inc`, `get`, or `counter` as input molecules.
+- after this definition, the reactions cannot be modified
 
-The user can certainly add new reactions that consume other molecules and _inject_ `inc` or `get`. However, the user cannot define a new reaction that, say, consumes `inc` or `get`. What happens if the user tries to define a _new_ reactions that consumes `inc`, say
+- the user cannot define any new reactions that _consume_ `inc`, `get`, or `counter` as input molecules
+
+The user can certainly define new reactions that consume other molecules and _inject_ `inc` or `get`. However, the user cannot define a new reaction that _consumes_ `inc` or `get`.
+
+What happens if the user tries to define a _new_ reaction that consumes `inc`, say
 
 	consume inc() => print "gotcha"
 
-The result will be that a _new_ name `inc` is defined, with this new reaction. This new `inc` belongs to a new join definition and cannot react to the old `counter` molecule. This is so because a join definition always _defines_ the input molecule names as new values in the local scope.
+is that a _new_ local variable with name `inc` is defined, representing a new molecule. This new molecule `inc` belongs to a new join definition and cannot react with the old `counter` molecule. This is so because a new join definition always defines not only the reactions, but also the input molecule names as new values in the local scope.
+
+Trying to define a new reaction that consumes a previously defined molecule is similar to writing this code:
+
+	int x = 2;
+	
+	{ 
+		int x; // x is a new variable now, not equal to 2
+			// the old x=2 is shadowed here.
+	}
 
 Due to this feature, local reactions are encapsulated and can be safely used from an outer scope.
 
