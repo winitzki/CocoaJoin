@@ -188,7 +188,7 @@ In other words, injecting `getStatus()` looks like an ordinary function call. By
 
 Within the scope of the reaction, however, the `reply` operation is a side effect that does not produce any value. Except for this side effect, the body of the reaction is a pure function, and values on the molecules are immutable. To change the "enabled status" in this example, the programmer can write a reaction that consumes the `enabled` molecule and then injects another instance of the `enabled` molecule with a different boolean value.
 
-In this way, the programmer is automatically protected from race conditions and deadlocks, while being able freely to call `getStatus()` from several different threads (i.e. from different reactions) concurrently. The molecule `enabled` is consumed by the reaction and _disappears from the soup_ while the reaction is running (this is the operational semantics of join calculus). For this reason, it is not possible that some other reaction consumes `enabled` and injects a different `enabled` while a reply to `getStatus` is being sent.
+In this way, the programmer is automatically protected from race conditions and deadlocks, while being able freely to call `getStatus()` from several different threads (i.e. from different reactions) concurrently. The molecule `enabled(...)` is consumed by the reaction and _disappears from the soup_ until the reaction is finished (this is the operational semantics of join calculus: input molecules disappear while the reaction is running). For this reason, it is not possible that some other reaction consumes `enabled` and injects a different `enabled` while a reply to `getStatus` is being sent.
 
 Local scope
 -----------
