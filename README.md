@@ -195,11 +195,27 @@ Local scope
 
 It is important to realize that molecule names are _local_ values in the program. These values are declared whenever a new reaction is defined that uses these names as _input_ molecules.
 
-Suppose we defined certain molecules and reactions within a function (which has its local scope). The correct functionality of this "chemistry" will usually depend on having a certain number of molecules injected, but no other molecules, and a certain number of reactions defined, but no other reactions. The functionality can be broken if just one more molecule were erroneously injected.
+For example, we may write (pseudocode)
+
+	// define reaction
+	consume a(x) & b(y) => ...
+	// now "a" is defined as a local variable
+	inject a(2);
+	let f = a; // now "f" is the same as "a"
+	call_some_function(f, b); // same as call_some_function(a,b)
+	inject f(3); // same as "inject a(3)"
+
+It may become confusing if we write code like this, because it is easy to forget which reaction has been defined with the molecule name `a` if we alias it to another local variable, `f`. Nevertheless, technically this is valid code.
+
+The local scoping property has important uses for programming in join calculus. 
+
+The first major use case is encapsulation. Suppose we defined certain molecules and useful reactions within a function (which has its local scope). The correct functionality of this "fragment of chemistry" will often depend on having a certain number of molecules injected but no other copies of these molecules, and a certain number of reactions defined but no other reactions. The functionality can be broken if just one more molecule were erroneously injected.
 
 Now, the new molecule names and the reactions defined for these molecules are visible within the local scope but not visible outside that scope. The outside scope cannot break the functionality by modifying these reactions or directly injecting the molecules defined inside.
 
 If some of these new molecules are needed outside the local scope, their names must be returned to the outer scope, say as return values of the function that defines the reactions. The outer scope will then be able only to _inject_ these new molecules into the soup. It will remain impossible to define any new reactions for these molecules, or to inject molecules whose names were not exposed. In this way, we guarantee that the functionality can be used safely within any outer scope. There will be examples of this encapsulation below.
+
+The second major use case of locally scoped molecules is creating a dynamic structure of reactions. This is a more advanced technique where a recursive function defines new reactions using some new and some old molecules. The new molecules are passed again to a recursive call of the same function, defining yet other new reactions, and so on. In this way, one can create a recursive structure of reactions, such as a binary tree or a linked list. This kind of structure may be used for computations where the number of concurrent threads is not known in advance; this can be useful for, say, concurrent binary search or concurrent sorting. Join calculus is able to create at run time a dynamically computed number of interlinked reactions, while keeping the requirement that all reactions and molecule names must be defined statically.
 
 Example 1: asynchronous counter
 -------------------------------
@@ -572,20 +588,20 @@ To use the library, import `CJoin.h`. Compile the .m files in CocoaJoin/. The im
 For convenience, macros are provided. The example of "asynchronous counter" is implemented in the tests and looks like this:
 
     cjDef(
-       
+       	// define the new input molecules
           cjAsync(inc, empty) // define slow molecule, inc()
           cjAsync(counter, int) // define slow molecule, counter(int x)
           cjSyncEmpty(int, getValue) // define fast molecule, int getValue()
           
+           // define reaction: consume counter(n) & inc(), inject counter(n+1)
           cjReact2(inc, empty, dummy, counter, int, n, // using the name "dummy" for empty value
            counter(n+1); ); // define reaction: consume inc(), counter(n), inject counter(n+1)
-           // define reaction: consume counter(n), getValue(), inject counter(n) and reply n to getValue()
+           // define reaction: consume counter(n) & getValue(), inject counter(n) and reply n to getValue()
           cjReact2(counter, int, n, getValue, empty_int, dummy,
           { counter(n), cjReply(getValue, n); } );
     );
-    counter(0), inc(), inc();
+    counter(0), inc(), inc(); // inject some molecules
     [CJoin cycleMainLoopForSeconds:0.2];	// allow enough time for reactions to run
-    
     int v = getValue(); // getValue returns 2
 
 CocoaJoin modifies the model of join calculus in some inessential ways:
@@ -603,7 +619,7 @@ Available types:
 
 Other types of this form: `CjM_`_t_`_`_r_  represents a name of a fast molecule carrying value of type _t_ returning a value of type _r_. In ordinary join calculus, this type would be a function _t_ -> _r_.
 
-* The syntax of molecule injection is simply `a(x)` or `b()`. (These function calls return `void` and inject the molecule. A fully constructed molecule is not available as a separate object.)
+* The syntax of molecule injection is simply `a(x)` or `b()`. (These function calls return `void` and inject the molecule. A special keyword such as `inject` is not used. A fully constructed molecule is not available as a separate object.)
 * The syntax of `reply` is `cjReply(name, value)`, where `name` must be the name of a fast molecule. (Otherwise there will be a compile-time error, since the `reply` method is only defined for fast molecules.)
 * It is not possible (due to limitations of the CPP macro processor) to make two join definitions one after another in the same local scope. Separate them with `{ ... }` or define them within different function/method scopes.
 * To make a new join definition, each new molecule name must be defined with its explicit type. If you do not define some of the new input molecules, or if you define a new input molecule but do not use it in the input, there will be a compiler error (undefined variable, or unused variable).
