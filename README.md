@@ -3,7 +3,7 @@ CocoaJoin
 
 An experimental implementation of join calculus in Objective-C.
 
-Join calculus is a formal model for (mostly) purely functional, concurrent computations. Join calculus is somewhat similar to the actor model, but join calculus is, so to speak, "more" purely functional.
+Join calculus is a formal model for (mostly) purely functional, concurrent computations. Join calculus is somewhat similar to the actor model but, in some sense, is "more declarative".
 
 There are a few implementations of join calculus in functional programming languages such as OCaml ("JoCaml"), F# ("joinads"), and Scala ("scalajoins").
 
