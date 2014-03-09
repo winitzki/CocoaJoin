@@ -59,7 +59,7 @@ For example, suppose we define a single reaction like this,
 
 	consume a(x) & b(y) => print x; print y; inject b(x+y)
 
-and let's suppose that no other reactions can consume `a` or `b`. Having defined this reaction, we can inject 5 copies of the molecule `a` and 3 copies of the molecule `b`, each with some random values, for example:
+and let's suppose that no other reactions can consume `a` or `b`. After defining this reaction, let us inject 5 copies of the molecule `a` and 3 copies of the molecule `b`, each with some random values, for example:
 
 	inject a(10), a(2), a(4), a(21), a(156);
 	inject b(1), b(1), b(1);
@@ -96,9 +96,9 @@ By default all reactions start _asynchronously_ (they are scheduled on a backgro
 
 Once the required input molecules are available, a reaction will be scheduled to start. If several different reactions become possible with the present molecules, one of the reactions will be chosen at random and scheduled. Since the input molecules for that reaction are consumed, other competing reactions may get delayed by this.
 
-If several copies of the input molecules are available, the reaction will consume randomly chosen copies of the input molecules. Injecting molecules is _not_ similar to sending messages to a "mailbox" or a "channel" because reactions _cannot_ inspect the molecules in the order they were injected. The chemical machine will always see all molecules present at a given time, regardless of the order of injection. A reaction expecting input molecules `a` and `b` can start whenever _some_ copies of `a` and `b` are present. Reactions will not preferentially consume molecules that were injected earlier.
+If several copies of the input molecules are available, the reaction will consume randomly chosen copies of the input molecules. Injecting molecules is _not_ similar to sending messages to a "mailbox" or a "channel" because reactions do not inspect the molecules in the order they were injected. The chemical machine will always see all molecules present at a given time, regardless of the order of injection. A reaction expecting input molecules `a` and `b` can start whenever _some_ copies of `a` and `b` are present. Reactions will not preferentially consume the molecules that were injected earliest. Also, several reactions may start simultaneously on different copies of the molecules.
 
-So it is the responsibility of the programmer to design the "chemistry" such that the desired values are computed in the right order, and to organize certain computations sequentially or concurrently as required. The programmer is free to define any number of molecules and reactions. Below we will see several examples of join calculus programming.
+So it is the responsibility of the programmer to design the "chemistry" such that the desired values are computed in the right order, and to organize certain computations sequentially or concurrently as required. The programmer is free to define any number of molecules and reactions.
 
 When a reaction is finished, it may or may not inject any output molecules into the soup. If a reaction does not inject any output molecules, the input molecules will be consumed and will disappear from the soup. However, a reaction _must_ consume at least one input molecule.
 
