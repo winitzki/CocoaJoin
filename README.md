@@ -124,7 +124,7 @@ or
 
 This limitation ("reactions must be _linear_ in the input") is not really restricting the computational power of join calculus.
 
-The definition of a set of reactions that use some combinations of the same input molecules is called a *join definition*. More precisely, a join definition defines _at the same time_ the names of the input molecules and all the reactions involving these input molecules. The names of the input molecules are treated as _new_ local values, shadowing any previously visible definition of these names.
+When defining a reaction, we at the same time define the input molecules. So if one reaction uses the new input molecules defined by another reaction, these reactions need to be defined _together_. A set of reactions defined together is called a *join definition*. More precisely, a join definition defines _at the same time_ the names of new input molecules and all the reactions involving these input molecules. The names of the input molecules are treated as _new_ local values, shadowing any previously visible definition of these names.
 
 In join calculus, reactions involving (some combinations of) the same input molecules always _have_ to be defined together in a single join definition. For example, consider the following two reactions,
 
