@@ -772,6 +772,18 @@ The CocoaJoin library was tested on a few examples shown above. In addition, the
 
 Roadmap for the future:
 
+* Urgent: need a mechanism to "deactivate" a local join definition, so that it drops all molecules and pending reactions, stops all running reactions (if possible), and ignores all injected molecules - until the join definition is again "activated".
+
+This is necessary for functionality such as add/remove listener. Suppose we declare an asynchronous molecule that will be injected by another process, and we wait for it to be injected. However, at some point we stop waiting. We need to tell the other process that it should not inject that molecule any more. However, if we try organizing this by chemistry, we might not get the right sequence of asynchronous messages: we tell the other process not to inject that molecule, but the process already has scheduled this injection, and we are not prepared for this.
+
+Another possible use case: we need to "reset" the whole process. We need a way to drop all present molecules and wait until the soup is quiet. This may take some time, so the "reset" is an asynchronous operation.
+
+The "actor" model does this by making an actor ignore _any_ messages not explicitly handled by the actor process. In the actor model, the actor could be simply switched to a behavior where no message is handled, to simulate the "deactivated" state. A way to implement the "deactivated" behavior for a join definition is to have a special molecule that reacts with all other molecules and does nothing. But it would be cumbersome to define a molecule that absorbs all other molecules - we would have to define, by hand, as many reactions as other molecules. It would be good if this functionality were automatic, and if such a molecule were automatically defined by the library, for any join definition.
+
+We would have to define also a method of removing this molecule, and/or of testing its presence. An alternative is to provide a fast "join control" molecule that imperatively changes the internal state of the join object.
+
+The asynchronous reply ("all is quiet") needs another molecule, from another join. A "join control" molecule could take such a molecule as a decoration value.
+
 * Define special global methods for controlling the "chemical machine" as a whole, or for controlling specific local join definitions.
 
 Possible functions: stats (get statistics on the number of molecules and reactions), pause (do not schedule any new reactions), resume (start scheduling reactions again), clear (remove all present molecules in all reactions, stop all reactions, reply immediately to all fast molecules, and ignore requests to inject any new molecules).
