@@ -8,7 +8,8 @@
 
 
 @interface DiningPhilosophicalLogic()
-@property (strong, nonatomic) CjR_id_id *joinControl; // control molecule: stop_and_clear, pause, resume, get_stats, etc. Not implemented.
+@property (copy, nonatomic) CjM_id stopJoin;
+//@property (copy, nonatomic) CjM_empty resumeJoin;
 @end
 
 @implementation DiningPhilosophicalLogic
@@ -16,24 +17,36 @@
 
 - (void) initializePhilosophersAndThen:(void (^)(void))continuation {
     
-    // stop the previous join, if possible
-    if (self.joinControl) {
+    // stop the previous join if possible. Otherwise start right away.
+    if (self.stopJoin) {
         [continuation copy];
-        [self.joinControl put:@{@"stop_and_then": continuation}];// stopAndThen:^{[self startAndThen:continuation];}];
+        [self initializePhilosopherStates];
+        self.stopJoin(^{
+            [self startAndThen:continuation];
+        });
+        
     } else {
         [self startAndThen:continuation];
     }
-    
+
 }
+
 - (void) randomWait {
     usleep((2000000 + arc4random() % 5000000 ));
 }
+
 - (void) startAndThen:(void (^)(void))continuation {
     
     // define molecules
-    
-    
+
     cjDef(
+          
+          cjStopJoin(stop)
+//          cjResumeJoin(resume)
+          
+          self.stopJoin = stop;
+//          self.resumeJoin = resume;
+          
           cjSlowEmpty(tA)
           cjSlowEmpty(tB)
           cjSlowEmpty(tC)
@@ -84,12 +97,8 @@
     // inject everything
     tA(); tB(); tC(); tD(); tE();
     fAB(); fBC(); fCD(); fDE(); fEA();
-    // tell the view controller what the initial states are.
-    [self.viewController philosopher:0 inState:Thinking];
-    [self.viewController philosopher:1 inState:Thinking];
-    [self.viewController philosopher:2 inState:Thinking];
-    [self.viewController philosopher:3 inState:Thinking];
-    [self.viewController philosopher:4 inState:Thinking];
+    
+    [self initializePhilosopherStates];
     
     if (continuation) {
         continuation();
@@ -97,5 +106,14 @@
     
 }
 
+- (void) initializePhilosopherStates {
+    // tell the view controller what the initial states are.
+    [self.viewController philosopher:0 inState:Thinking];
+    [self.viewController philosopher:1 inState:Thinking];
+    [self.viewController philosopher:2 inState:Thinking];
+    [self.viewController philosopher:3 inState:Thinking];
+    [self.viewController philosopher:4 inState:Thinking];
+
+}
 
 @end

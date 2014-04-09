@@ -8,6 +8,7 @@
 @interface DinPhilVCViewController ()
 @property (strong, nonatomic) IBOutletCollection(UILabel) NSArray *philLabels;
 - (IBAction)restart:(id)sender;
+@property (strong, nonatomic) IBOutlet UIActivityIndicatorView *busy;
 
 @property (strong, nonatomic) IBOutlet DiningPhilosophicalLogic *logic;
 @property (strong, nonatomic) NSArray *names;
@@ -33,12 +34,23 @@
 }
 - (void)viewWillAppear:(BOOL)animated {
     [self.logic initializePhilosophersAndThen:^{
-        // TODO: indicate readiness to begin
+        [self showBusySignal:NO];
     }];
     
     
     [super viewWillAppear:animated];
     
+}
+- (void) showBusySignal:(BOOL)isBusy {
+    [self performSelectorOnMainThread:@selector(showBusySignalInternal:) withObject:@(isBusy) waitUntilDone:NO];
+}
+- (void) showBusySignalInternal:(NSNumber *)isBusy {
+    BOOL busyValue = [isBusy boolValue];
+    if (busyValue) {
+        [self.busy startAnimating];
+    } else {
+        [self.busy stopAnimating];
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -49,8 +61,10 @@
 
 
 - (void)restart:(id)sender {
+    [self showBusySignal:YES];
     [self.logic initializePhilosophersAndThen:^{
-        // TODO: indicate stopping and then readiness
+        NSLog(@"finished initializing after restart");
+        [self showBusySignal:NO];
     }];
 }
 
