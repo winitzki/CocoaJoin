@@ -18,16 +18,25 @@ static NSMutableSet *allCreatedJoins; // this set contains weakRef objects point
 @property (assign, nonatomic) NSInteger joinID;
 @property (strong, nonatomic) NSString *joinQueueName;
 @property (strong, nonatomic) dispatch_queue_t joinQueue;
+@property (strong, nonatomic) dispatch_group_t joinQueueGroup;
 @property (strong, nonatomic) dispatch_queue_t reactionQueue;
+@property (strong, nonatomic) dispatch_group_t reactionQueueGroup;
 @property (assign, nonatomic) ReactionPriority reactionPriority;
-@property (strong, nonatomic) NSMutableDictionary *availableMoleculeNames; // molecule name => array of molecule values in instances of that molecule that are currently available in the soup. Access to this dictionary is restricted to the serial queue.
-// these two are actually immutable, but declared as mutable since we now declare reactions one by one rather than all together. Should be made immutable.
+
+// molecule name => array of instances of that molecule that are currently available in the soup. Access to this dictionary is restricted to the serial queue.
+@property (strong, nonatomic) NSMutableDictionary *availableMoleculeNames;
+
+// these two are actually immutable, but declared as mutable since we now declare reactions one by one rather than all together. Could be made immutable.
 @property (strong, nonatomic) NSMutableArray *declaredReactions; // NSSet of molecule names => reaction object
 @property (strong, nonatomic) NSMutableSet *knownMoleculeNames; // NSSet of all known molecule names
 @property (assign, nonatomic) BOOL decideOnMainThread;
 - (void) injectFullMolecule:(CjR_A*)molecule;
 - (void) internalInjectFullMolecule:(CjR_A*)molecule;
 - (id)getSyncReplyTo:(CjS_A *)syncMolecule;
+@property (assign, atomic) enum { Running, Stopping, Stopped } runningState;
+
+- (void) stopAndInject:(CjM_empty)stopped; // send a stop command to the join object. When the stopping is complete, the join object will inject the "stopped" molecule.
+- (void) resume; // resume if we were stopped successfully. This is synchronous. Nothing is done if we are still in the process of stopping.
 
 @end
 
@@ -84,7 +93,7 @@ _cjMkRClassPrivate(float, assign)
     return [NSNull null];
 }
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@(%@)", self.moleculeName, self.value];
+    return [NSString stringWithFormat:@"%@()", self.moleculeName];
 }
 @end
 
@@ -227,8 +236,6 @@ _cjMkSPrivateAndImpl(int, int, assign)
     static NSInteger globalJoinCounter = 0;
     CJoin *join = self;
     
-    
-    
     join.joinID = (++globalJoinCounter);
     
     if (join.decideOnMainThread) {
@@ -238,18 +245,32 @@ _cjMkSPrivateAndImpl(int, int, assign)
         join.joinQueueName = [NSString stringWithFormat:@"CocoaJoin#%d", join.joinID];
         
         const char* queueLabel = [join.joinQueueName cStringUsingEncoding:NSASCIIStringEncoding];
+        // note: the queue for join decisions is SERIAL because we don't want to allow asynchronous updates to molecule availability tables. All join decisions are designed to be quick in join calculus.
         join.joinQueue = dispatch_queue_create(queueLabel, DISPATCH_QUEUE_SERIAL);
         dispatch_set_target_queue(join.joinQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0));
         join.reactionQueue = dispatch_get_global_queue(join.reactionPriority, 0);
     }
+    
     join.availableMoleculeNames = [NSMutableDictionary dictionary];
     join.knownMoleculeNames = [NSMutableSet set];
     join.declaredReactions = [NSMutableArray array];
+
+    // dispatch groups are used to keep track of asynchronous decisions and reactions are still running.
+    // these dispatch groups are used only for implementing the stop/resume functionality (otherwise we wouldn't need groups).
+    // all asynchronously dispatched join decisions are put in these dispatch groups. Stopping will wait until these groups are finished.
+    join.joinQueueGroup = dispatch_group_create();
+    join.reactionQueueGroup = dispatch_group_create();
+    
+    // now we are ready
+    join.runningState = Running;
+    
 }
 
 
 - (id)getSyncReplyTo:(CjS_A *)syncMolecule {
-   
+    if (self.runningState != Running) { // we are not running; do nothing and return immediately
+        return nil;
+    }
     // set up the semaphore
     // create and inject a molecule of class CjSync into the soup
     // wait for the semaphore, then extract the result value from CjSync and return it (as id)
@@ -291,14 +312,17 @@ _cjMkSPrivateAndImpl(int, int, assign)
 }
 
 - (void)injectFullMolecule:(CjR_A *)molecule {
-    
+    // ignore all injections if we are not in a running state
+    if (self.runningState != Running) {
+        return;
+    }
     BOOL isMainThread = [[NSThread currentThread] isMainThread];
     if (isMainThread && self.decideOnMainThread) {
         if (LOGGING) NSLog(@"%@ %@, join %d, inject molecule %@ on mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, molecule.moleculeName, isMainThread);
         [self internalInjectFullMolecule:molecule];
     } else {
-        if (LOGGING) NSLog(@"%@ %@, join %d, scheduling the injection asynchronously, mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, isMainThread);
-        dispatch_async(self.joinQueue, ^{
+        if (LOGGING) NSLog(@"%@ %@, join %d, scheduling the injection asynchronously, mainThread=%d, join group=%@", self.class, NSStringFromSelector(_cmd), self.joinID, isMainThread, self.joinQueueGroup);
+        dispatch_group_async(self.joinQueueGroup, self.joinQueue, ^{
             [self internalInjectFullMolecule:molecule];
         });
     }
@@ -322,6 +346,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
     // decide which reactions can be started, and start each of them asynchronously, until no new reactions can be started at this time.
     NSPair *foundReaction = nil;
     while ((foundReaction = [self findAnyReactionWithInput]) != nil) {
+        if (self.runningState != Running) break; // stop dispatching reactions in this case.
         [self dispatchReaction:foundReaction];
     }
 
@@ -391,7 +416,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
         if (reaction.runOnMainThread) {
             if (LOGGING) NSLog(@"%@ %@ join %d dispatching asynchronous reaction %@, input %@, mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, reaction, inputMolecules, isMainThread);
         }
-        dispatch_async(queueForReaction, ^{
+        dispatch_group_async(self.reactionQueueGroup, queueForReaction, ^{
             
             if (LOGGING) NSLog(@"%@ %@ join %d starting asynchronous reaction %@, input %@, mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, reaction, inputMolecules, [[NSThread currentThread] isMainThread]);
             [reaction startReactionWithInputs:inputMolecules];
@@ -439,9 +464,62 @@ _cjMkSPrivateAndImpl(int, int, assign)
     // use a special globally created join for this!
 }
 - (void)stopAndThen:(void (^)(void))continuation {
-    // TODO: implement
-    // Wait until all reactions are finished; reply to all existing fast molecules, and remove all existing slow molecules; on any new inject, do not inject any new slow molecules but reply to any injected fast molecules.
-    if (continuation != nil) continuation();
+    // wait until all join decisions are finished; wait until all reactions are finished; reply nil to all existing fast molecules, and remove all existing slow molecules
+    // on any new inject, do not inject any new slow molecules but reply nil to any injected fast molecules.
+    
+    if (self.runningState != Running) {
+        return; // do nothing if we are not running
+    }
+    
+    [continuation copy]; // make sure we don't lose this closure
+    
+    self.runningState = Stopping;
+    
+    dispatch_group_notify(self.joinQueueGroup, self.joinQueue, ^{
+        
+        dispatch_group_notify(self.reactionQueueGroup, self.joinQueue, ^{
+            [self dropAllMoleculesAndReplyNilToAllSync];
+            
+            self.runningState = Stopped;
+            if (continuation != nil) continuation();
+            
+        });
+        
+    });
+}
+- (void) stopAndInject:(CjM_empty)stopped {
+    [stopped copy]; // make sure we don't lose this closure
+    [self stopAndThen:^{
+        if (stopped != nil) stopped();
+    }];
+}
+
+- (CjM_id)makeStop {
+   return ^(id stopped){ [self stopAndInject:stopped]; };
+}
+- (CjM_empty)makeResume {
+    return ^{ [self resume]; };
+}
+- (void)resume {
+    if (self.runningState == Stopped) {
+        self.runningState = Running;
+    } else { // otherwise do nothing
+            if (LOGGING) NSLog(@"%@ %@ join %d, requst to resume but running state is %d, mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, self.runningState, [[NSThread currentThread] isMainThread]);
+    }
+}
+- (void) dropAllMoleculesAndReplyNilToAllSync {
+    // reply nil to all sync molecules
+    for (NSString *moleculeName in self.availableMoleculeNames.allKeys) {
+        NSMutableArray *presentMoleculeValues = [self.availableMoleculeNames objectForKey:moleculeName];
+        for (id molecule in presentMoleculeValues) {
+            if ([molecule isKindOfClass:CjS_A.class]) {
+                [(CjS_A *)molecule replyInternal:nil];
+            }
+        }
+    }
+    // remove all molecules from the soup
+    self.availableMoleculeNames = [NSMutableDictionary dictionary];
+    
 }
 
 #pragma mark Utility functions

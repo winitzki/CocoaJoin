@@ -138,9 +138,10 @@ typedef void(^ReactionPayload)(NSArray *inputs);
 @interface CJoin : NSObject
 + (instancetype) joinOnMainThread:(BOOL)onMainThread reactionPriority:(ReactionPriority)priority;
 - (void) defineReactionWithInputNames:(NSArray *)inputs payload:(ReactionPayload)payload runOnMainThread:(BOOL)onMainThread;
-+ (void) stopAndThen:(void (^)(void))continuation;
-+ (void) cycleMainLoopForSeconds:(CGFloat)seconds;
-
++ (void) stopAndThen:(void (^)(void))continuation; // drop all molecules, ignore all injections, wait until all reactions are stopped, then run the continuation.
++ (void) cycleMainLoopForSeconds:(CGFloat)seconds;/// useful for testing an asynchronous operation. Schedule an operation on main thread, then call this, then wait for results. (Otherwise, the main thread will block while waiting for results, because background operations will not be started until the main thread yields control to the runloop.)
+- (CjM_empty) makeResume;
+- (CjM_id) makeStop;
 /// convenience functions to convert between id and primitive types: do we need them all?
 + (BOOL) unwrap_BOOL:(id)value;
 + (int) unwrap_int:(id)value;
@@ -157,8 +158,6 @@ typedef void(^ReactionPayload)(NSArray *inputs);
 
 @end
 
-// Todo: implement the special reaction with JoinControl
-
 // Syntactic sugar
 
 #define cjSlow(m,t) CjM_##t m = ^(t value){ [[CjR_##t name:@#m join:_cj_LocalJoin] put:value]; };
@@ -167,13 +166,13 @@ typedef void(^ReactionPayload)(NSArray *inputs);
 #define cjFastEmpty(t_out,m) CjM_empty_##t_out m = ^t_out(void){ return [[CjR_empty_##t_out name:@#m join:_cj_LocalJoin] put]; };
 #define cjReply(m, v) [_cj_##m##_R reply:v]
 
-#define cjJoinControlFast(m) cjFast(id,m,id)
-#define cjJoinControlSlow(m) cjSlow(m,id)
+#define cjStopJoin(m) CjM_id m = [_cj_LocalJoin makeStop];
+#define cjResumeJoin(m) CjM_empty m = [_cj_LocalJoin makeResume];
 
 #define cjDefUIPriority(ui,p,r...)   \
 CJoin *_cj_LocalJoin = [CJoin joinOnMainThread:ui reactionPriority:p]; \
 r \
-_cj_LocalJoin = nil;
+//_cj_LocalJoin = nil;
 
 #define cjDef(r...) cjDefUIPriority(NO, Default, r)
 #define cjDefUI(r...) cjDefUIPriority(YES, Default, r)

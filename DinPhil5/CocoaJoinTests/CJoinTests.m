@@ -26,7 +26,103 @@
     [super tearDown];
 }
 
-/// useful for testing an asynchronous operation. Schedule an operation on main thread, then call this, then wait for results. (Otherwise, the main thread will block while waiting for results, because background operations will not be started until the main thread yields control to the runloop.)
+- (void) testControl1 {
+    CJoin *j = [CJoin joinOnMainThread:NO reactionPriority:Default];
+    
+    CjM_id jStop = [j makeStop];
+    CjM_empty jResume = [j makeResume];
+    
+    // stop
+    jStop(jResume);
+    // we must be resumed here
+    
+}
+
+- (CjM_empty) makeEmptyMoleculeWithBlock:(void(^)(void))blk {
+    cjDef(
+          cjSlowEmpty(stopped)
+          
+          cjReact1(stopped, empty, dummy, { blk(); });
+    )
+    return [stopped copy];
+}
+
+- (void) testControl2 {
+    cjDef(
+          
+          cjStopJoin(jStop)
+//          cjResumeJoin(jResume)
+          
+          cjSlowEmpty(inc)
+          cjSlow(counter, int)
+          cjFastEmpty(int, getValue)
+          
+          cjReact2(inc, empty, dummy, counter, int, n, { counter(n+1); } )
+          cjReact2(counter, int, n, getValue, empty_int, dummy, { counter(n); cjReply(getValue, n); } )
+    )
+    counter(0);
+    CjM_empty stopped = [self makeEmptyMoleculeWithBlock:^{
+        
+    }];
+    jStop(stopped);
+    inc(), inc(); // these must be ignored
+    [CJoin cycleMainLoopForSeconds:0.2]; // make sure the inc() molecules have been consumed...
+    
+    int v = getValue();
+    
+    XCTAssertEqual(v, 0, @"async counter increased twice but has no effect in stopped state");
+}
+- (void) testControl3 {
+    cjDef(
+          
+          cjStopJoin(jStop)
+//          cjResumeJoin(jResume)
+          
+          cjSlowEmpty(inc)
+          cjSlow(counter, int)
+          cjFastEmpty(int, getValue)
+          
+          cjReact2(inc, empty, dummy, counter, int, n, { counter(n+1); } )
+          cjReact2(counter, int, n, getValue, empty_int, dummy, { counter(n); cjReply(getValue, n); } )
+          )
+    counter(0);
+    
+    jStop(nil);
+    inc(), inc(); // these must be ignored
+    [CJoin cycleMainLoopForSeconds:0.2]; // make sure the inc() molecules have been consumed...
+    int v1 = getValue();
+    XCTAssertEqual(v1, 0, @"fast molecule returns zero for a stopped join");
+    
+}
+- (void) testControl4 {
+    cjDef(
+          
+          cjStopJoin(jStop)
+          cjResumeJoin(jResume)
+          
+          cjSlowEmpty(inc)
+          cjSlow(counter, int)
+          cjFastEmpty(int, getValue)
+          
+          cjReact2(inc, empty, dummy, counter, int, n, { counter(n+1); } )
+          cjReact2(counter, int, n, getValue, empty_int, dummy, { counter(n); cjReply(getValue, n); } )
+          )
+    counter(0);
+    
+    jStop(nil);
+    inc(), inc(); // these must be ignored
+    [CJoin cycleMainLoopForSeconds:0.2]; // make sure the inc() molecules have been consumed...
+    
+    // let's resume now
+    jResume();
+    counter(0); // need to inject everything again.
+    inc(), inc(); // these must not be ignored now
+    [CJoin cycleMainLoopForSeconds:0.2]; // make sure the inc() molecules have been consumed...
+    
+    int v = getValue();
+    
+    XCTAssertEqual(v, 2, @"async counter increased twice works again after resuming");
+}
 - (void) testExample1 {
     // Here is the full code we would need to write if we don't use any macros.
     
@@ -86,9 +182,9 @@
           cjSlow(counter, int)
           cjFastEmpty(int, getValue)
           
-          cjReact2(inc, empty, dummy, counter, int, n, { counter(n+1); } );
-          cjReact2(counter, int, n, getValue, empty_int, dummy, { counter(n); cjReply(getValue, n); } );
-    );
+          cjReact2(inc, empty, dummy, counter, int, n, { counter(n+1); } )
+          cjReact2(counter, int, n, getValue, empty_int, dummy, { counter(n); cjReply(getValue, n); } )
+    )
     
     counter(0), inc(), inc();
     [CJoin cycleMainLoopForSeconds:0.2]; // make sure the inc() molecules have been consumed...
@@ -102,8 +198,8 @@
             cjSlow(counter, int)
             cjFastEmpty(int, getValue)
             
-            cjReact2UI(inc, empty, dummy, counter, int, n, { counter(n+1); } );
-            cjReact2UI(counter, int, n, getValue, empty_int, dummy, { counter(n); cjReply(getValue, n); } );
+            cjReact2UI(inc, empty, dummy, counter, int, n, { counter(n+1); } )
+            cjReact2UI(counter, int, n, getValue, empty_int, dummy, { counter(n); cjReply(getValue, n); } )
             )
     counter(0), inc(), inc();
     // we should not need to cycle the UI thread because all reactions and the join are running on the UI thread.
