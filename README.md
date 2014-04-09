@@ -14,6 +14,12 @@ This project contains the join calculus library and an example iOS application, 
 Version history
 ---------------
 
+* Version 0.3.0
+
+The stop/resume functionality is now implemented.
+
+The "Dining Philosophers" simulation can be restarted; this takes time since we have to wait until all reactions finish and the soup becomes quiet.
+
 * Version 0.2.1
 
 CocoaJoin is now compiled as a static library.
