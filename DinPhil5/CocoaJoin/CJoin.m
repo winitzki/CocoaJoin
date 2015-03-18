@@ -73,7 +73,7 @@ _cjMkRClassPrivate(float, assign)
     if ([join.knownMoleculeNames containsObject:name]) {
         return result;
     } else {
-        @throw [NSString stringWithFormat:@"attempting to inject molecule '%@' but it is unknown in join #%d", name, join.joinID];
+        @throw [NSString stringWithFormat:@"attempting to inject molecule '%@' but it is unknown in join #%ld", name, (long)join.joinID];
         return nil;
     }
 }
@@ -242,7 +242,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
         join.joinQueue = dispatch_get_main_queue();
         join.reactionQueue = join.joinQueue;
     } else {
-        join.joinQueueName = [NSString stringWithFormat:@"CocoaJoin#%d", join.joinID];
+        join.joinQueueName = [NSString stringWithFormat:@"CocoaJoin#%ld", (long)join.joinID];
         
         const char* queueLabel = [join.joinQueueName cStringUsingEncoding:NSASCIIStringEncoding];
         // note: the queue for join decisions is SERIAL because we don't want to allow asynchronous updates to molecule availability tables. All join decisions are designed to be quick in join calculus.
@@ -292,7 +292,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
 }
 
 - (void) internalInjectFullMolecule:(CjR_A *)molecule {
-    if (LOGGING) NSLog(@"%@ %@ join %d, injecting molecule '%@', mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, molecule, [[NSThread currentThread] isMainThread]);
+    if (LOGGING) NSLog(@"%@ %@ join %ld, injecting molecule '%@', mainThread=%d", self.class, NSStringFromSelector(_cmd), (long)self.joinID, molecule, [[NSThread currentThread] isMainThread]);
     NSString *moleculeName = molecule.moleculeName;
         // add to available classes, but only if this is a class we recognize.
     if ([self.knownMoleculeNames containsObject:moleculeName]) {
@@ -303,10 +303,10 @@ _cjMkSPrivateAndImpl(int, int, assign)
         }
         [presentMoleculeValues addObject:molecule];
     } else {
-        if (LOGGING) NSLog(@"%@ %@ join %d, molecule named %@ is unknown in this join definition", self.class, NSStringFromSelector(_cmd), self.joinID, moleculeName);
+        if (LOGGING) NSLog(@"%@ %@ join %ld, molecule named %@ is unknown in this join definition", self.class, NSStringFromSelector(_cmd), (long)self.joinID, moleculeName);
        
     }
-    if (LOGGING) NSLog(@"%@ %@ join %d, after injecting molecule '%@' the join now contains:\n{ %@ }", self.class, NSStringFromSelector(_cmd), self.joinID, molecule, [self debugPrintSoupContents]);
+    if (LOGGING) NSLog(@"%@ %@ join %ld, after injecting molecule '%@' the join now contains:\n{ %@ }", self.class, NSStringFromSelector(_cmd), (long)self.joinID, molecule, [self debugPrintSoupContents]);
     
     [self decideAndRunAllPossibleReactions];
 }
@@ -318,10 +318,10 @@ _cjMkSPrivateAndImpl(int, int, assign)
     }
     BOOL isMainThread = [[NSThread currentThread] isMainThread];
     if (isMainThread && self.decideOnMainThread) {
-        if (LOGGING) NSLog(@"%@ %@, join %d, inject molecule %@ on mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, molecule.moleculeName, isMainThread);
+        if (LOGGING) NSLog(@"%@ %@, join %ld, inject molecule %@ on mainThread=%d", self.class, NSStringFromSelector(_cmd), (long)self.joinID, molecule.moleculeName, isMainThread);
         [self internalInjectFullMolecule:molecule];
     } else {
-        if (LOGGING) NSLog(@"%@ %@, join %d, scheduling the injection asynchronously, mainThread=%d, join group=%@", self.class, NSStringFromSelector(_cmd), self.joinID, isMainThread, self.joinQueueGroup);
+        if (LOGGING) NSLog(@"%@ %@, join %ld, scheduling the injection asynchronously, mainThread=%d, join group=%@", self.class, NSStringFromSelector(_cmd), (long)self.joinID, isMainThread, self.joinQueueGroup);
         dispatch_group_async(self.joinQueueGroup, self.joinQueue, ^{
             [self internalInjectFullMolecule:molecule];
         });
@@ -394,7 +394,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
 - (void) dispatchReaction:(NSPair *)reactionWithInput {
     
     BOOL isMainThread = [[NSThread currentThread] isMainThread];
-    if (LOGGING) NSLog(@"%@ %@ join %d mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, isMainThread);
+    if (LOGGING) NSLog(@"%@ %@ join %ld mainThread=%d", self.class, NSStringFromSelector(_cmd), (long)self.joinID, isMainThread);
     
     CjReaction *reaction = reactionWithInput.first;
     NSArray *inputMolecules = reactionWithInput.second;
@@ -406,7 +406,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
     
     // need to avoid multiple async dispatch if we are on the main thread and we need to start a reaction on the main thread.
     if (reaction.runOnMainThread && isMainThread) {
-        if (LOGGING) NSLog(@"%@ %@ join %d starting reaction %@, input %@, on main thread", self.class, NSStringFromSelector(_cmd), self.joinID, reaction, inputMolecules);
+        if (LOGGING) NSLog(@"%@ %@ join %ld starting reaction %@, input %@, on main thread", self.class, NSStringFromSelector(_cmd), (long)self.joinID, reaction, inputMolecules);
         
         [reaction startReactionWithInputs:inputMolecules];
     } else {
@@ -414,11 +414,11 @@ _cjMkSPrivateAndImpl(int, int, assign)
         dispatch_queue_t queueForReaction = reaction.runOnMainThread ? dispatch_get_main_queue() : self.reactionQueue;
         // if the join is not running on main thread, but the reaction must be run on main thread, then we must use the main queue.
         if (reaction.runOnMainThread) {
-            if (LOGGING) NSLog(@"%@ %@ join %d dispatching asynchronous reaction %@, input %@, mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, reaction, inputMolecules, isMainThread);
+            if (LOGGING) NSLog(@"%@ %@ join %ld dispatching asynchronous reaction %@, input %@, mainThread=%d", self.class, NSStringFromSelector(_cmd), (long)self.joinID, reaction, inputMolecules, isMainThread);
         }
         dispatch_group_async(self.reactionQueueGroup, queueForReaction, ^{
             
-            if (LOGGING) NSLog(@"%@ %@ join %d starting asynchronous reaction %@, input %@, mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, reaction, inputMolecules, [[NSThread currentThread] isMainThread]);
+            if (LOGGING) NSLog(@"%@ %@ join %ldd starting asynchronous reaction %@, input %@, mainThread=%d", self.class, NSStringFromSelector(_cmd),(long) (long)self.joinID, reaction, inputMolecules, [[NSThread currentThread] isMainThread]);
             [reaction startReactionWithInputs:inputMolecules];
         });
         
@@ -505,7 +505,7 @@ _cjMkSPrivateAndImpl(int, int, assign)
         self.runningState = Running;// at this point, we have no molecules so no reactions can be started; nothing left to do but wait for more molecules
         
     } else { // otherwise do nothing
-            if (LOGGING) NSLog(@"%@ %@ join %d, requst to resume but running state is %d, mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, self.runningState, [[NSThread currentThread] isMainThread]);
+            if (LOGGING) NSLog(@"%@ %@ join %ld, requst to resume but running state is %d, mainThread=%d", self.class, NSStringFromSelector(_cmd), (long)self.joinID, self.runningState, [[NSThread currentThread] isMainThread]);
     }
 }
 - (void) dropAllMoleculesAndReplyNilToAllSync {
