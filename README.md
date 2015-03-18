@@ -144,45 +144,46 @@ Both reactions have the molecule `b` as an input molecule, so we need to define 
 
 These two reactions do not have a common input molecule. For this reason, we do not necessarily have to define them together in a single join definition. However, note that the first reaction defines the name `a` while the second reaction uses this name to inject a molecule `a(x-y)`. It is important to realize that a molecule can be injected only if its name is visible in the current lexical scope. For this reason, the second reaction needs to be defined _after_ the first one, and the definition of the second reaction must be made within a scope where the name `a` is still visible.
 
-Defining a single reaction like this,
+Defining a single reaction like this, which defines `a` and `b` but _uses_ the value `c`,
 
 	consume a(x) & b(y) => inject c(x+y+1)
 
-is invalid in a scope where `c` is not a visible local value of the correct type (the type of molecule names with value of integer type). Such a reaction defines `a` and `b` but _uses_ the value `c`. So this code is invalid just as a function 
+is valid only in a scope where `c` is a visible local value of the correct type (the type of molecule name with value of integer type). This is quite similar to the fact that an ordinary function 
 
 	function (x,y) { return c(x+y); }
 
-is invalid in a scope where `c` is undefined.
+is valid only in a scope where `c` is already defined.
 
 Once a join definition is made and some new molecules have been defined, the "chemistry" of the new molecules is set in stone - no further reactions can be added to the same input molecules. In other words, reactions and molecule names are defined _statically_.
 
-In join calculus, the molecule names (`a`, `b`, etc.) are syntactically _functions_ and play the role of "injectors" for molecules. By writing `inject a(2)`, the programmer performs an injection of the molecule `a` with value `2` into the soup. The operator `inject a(2)` does not return any value (or, formally, you can say it returns an _empty_ value). So, by itself, the molecule `a(2)` is _not_ a value accessible in the program. Rather, the syntax `a(2)` represents the "fully constructed molecule" that has been injected into the "chemical soup".
+In join calculus, the molecule names (`a`, `b`, etc.) are syntactically _functions_ and play the role of "injectors" for molecules. By writing `inject a(2)`, the programmer performs an injection of the molecule `a` with value `2` into the soup. The operator `inject a(2)` does not return any value (or, formally, you can say it returns an _empty_ value). So, by itself, the molecule `a(2)` is _not_ a value accessible to the programmer. Rather, the syntax `a(2)` represents injecting a "fully constructed" molecule into the chemical soup.
 
-On the other hand, the molecule name `a` is a local (and immutable) value in the program, it can be given as an argument to a function, stored in an array, and so on.
+On the other hand, the molecule _name_ `a` is a local (and immutable) value in the program. A molecule name can be used as an argument to a function, stored in an array, and so on.
 
-Footnote: In the Objective-C implementation, the keyword `inject` is not used, and the syntax `a(2)` directly injects the molecule `a` with value `2`. An object representing a "fully constructed molecule" is not directly available to the programmer.
+Footnote: In the Objective-C implementation, the keyword `inject` is not used, and the syntax `a(2)` directly injects the molecule `a` with value `2`. An object representing a "fully constructed molecule" is not directly available to the programmer, which is as it should be in join calculus.
 
 Synchronous molecules
 ---------------------
 
-The operation of injecting a "slow" molecule looks like a function call that returns no value. Injection is performed right away and does not block the execution thread, but reactions do not necessarily start at the same time since this is a "slow" (i.e. asynchronous) molecule. 
+The operation of injecting a "slow" molecule looks like a function call that returns no value. Injection is performed right away and does not block the execution thread. However, reactions do not necessarily start at the same time since this is a "slow" (i.e. asynchronous) molecule. 
 
-There is a second type of molecules that are "synchronous" or "fast". A fast molecule has two special features compared with "slow" molecules:
+There is a second type of molecules that are "synchronous" or "fast". A fast molecule has some special features compared with "slow" molecules:
 
 * when injected into the soup, a fast molecule will force some reaction to start right away (or as soon as possible)
-* a fast molecule can return a value to the injecting thread, i.e. injecting a fast molecule looks like an ordinary function: it blocks the execution thread until some computation is finished and a value is returned to the caller.
+* injecting a fast molecule is a _blocking_ operation that remains blocked until some reaction can start involving the newly injected fast molecule
+* a fast molecule can return a value to the injecting thread
 
-In other words, injecting a "fast" molecule will _block_ the execution thread until the machine can run some reaction involving this fast molecule. If no reactions are available for that molecule, the injecting thread will be blocked indefinitely.
+So, the operation of injecting a fast molecule into the soup looks like an ordinary function call. It blocks the execution thread until some computation is finished and a value is returned to the caller. If no reactions are ever available for the fast molecule molecule, the injecting thread will be blocked indefinitely.
 
-From the point of view of a reaction, a fast molecule is consumed as an input molecule, just like any other input molecule. However, there is a special operator `reply` that can be used on the "fast" molecule, in order to deliver a return value to the injecting call. The operator `reply` looks like this, 
+From the point of view of a reaction, a fast molecule is consumed as an input molecule, just like any other input molecule. A special operator `reply` is used on the "fast" molecule, in order to deliver a return value to the injecting call. The operator `reply` looks like this, 
 
 	reply x to m
 
 This assigns the return value `x` to the "fast" molecule `m`. The `reply` operator cannot be used on a "slow" molecule. (So, if we see a `reply` operator used with a molecule name, we know this is a fast molecule.)
 
-Once the `reply` operator is called with a value, the injecting call unblocks and the value is returned. Thus, the call `m()` will return the value `x`, like an ordinary, blocking function call. The reaction, meanwhile, continues (perhaps on a different thread) and may inject other molecules into the soup or "reply" to other fast molecules - or do whatever else. The fast molecule `m` _does not_ remain in the soup, as if it had been "ejected" by the `reply` operation while at the same time returning a value to the caller.
+Once the `reply` operator is called with a value, the injecting call unblocks and the value is returned. Thus, the call `m()` will return the value `x`, like an ordinary, blocking function call. The reaction, meanwhile, continues (perhaps on a different thread) and may inject other molecules into the soup or "reply" to other fast molecules - or do whatever else. The fast molecule `m` _does not_ remain in the soup, as if the caller has pulled the fast molecule out when the `reply` operation returned a value to the caller.
 
-Here is an example. Suppose we have some molecule `enabled` that carries a boolean value, so that we can have either `enabled(true)` or `enabled(false)` in the soup. We would like to find out what is the current value on the `enabled` molecule, and we would like to have this information synchronously (to know what is the status _right now_). For this, we define a reaction,
+Here is an example. Suppose we have some slow molecule `enabled` that carries a boolean value, so that we can have either `enabled(true)` or `enabled(false)` in the soup. We would like to find out what is the current value on the `enabled` molecule, and we would like to have this information synchronously (to know what is the status _right now_). For this, we define a reaction,
 
 	consume enabled(s) & getStatus() => reply s to getStatus; inject enabled(s)
 
@@ -194,12 +195,12 @@ In other words, injecting `getStatus()` looks like an ordinary function call. By
 
 Within the scope of the reaction, however, the `reply` operation is a side effect that does not produce any value. Except for this side effect, the body of the reaction is a pure function, and values on the molecules are immutable. To change the "enabled status" in this example, the programmer can write a reaction that consumes the `enabled` molecule and then injects another instance of the `enabled` molecule with a different boolean value.
 
-In this way, the programmer is automatically protected from race conditions and deadlocks, while being able freely to call `getStatus()` from several different threads (i.e. from different reactions) concurrently. The molecule `enabled(...)` is consumed by the reaction and _disappears from the soup_ until the reaction is finished (this is the operational semantics of join calculus: input molecules disappear while the reaction is running). For this reason, it is not possible that some other reaction consumes `enabled` and injects a different `enabled` while a reply to `getStatus` is being sent.
+In this way, the programmer is automatically protected from race conditions and deadlocks, while being able freely to call `getStatus()` from several different threads (i.e. from different reactions) concurrently. The molecule `enabled(...)` is consumed by the reaction and _disappears from the soup_ until the reaction is finished, because this is the operational semantics of join calculus: All input molecules disappear when a reaction starts running. For this reason, it is not possible that some other reaction consumes `enabled` and injects a different `enabled` while a reply to `getStatus` is still being sent.
 
 Local scope
 -----------
 
-It is important to realize that molecule names are _local_ values in the program. These values are declared whenever a new reaction is defined that uses these names as _input_ molecules.
+It is important to keep in mind that molecule names are _local_ values in the program. These values are declared whenever a new reaction is defined that uses these names as _input_ molecules. The definition of the new reaction is local in the current scope.
 
 For example, we may write (pseudocode)
 
