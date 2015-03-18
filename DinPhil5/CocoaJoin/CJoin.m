@@ -502,7 +502,8 @@ _cjMkSPrivateAndImpl(int, int, assign)
 }
 - (void)resume {
     if (self.runningState == Stopped) {
-        self.runningState = Running;
+        self.runningState = Running;// at this point, we have no molecules so no reactions can be started; nothing left to do but wait for more molecules
+        
     } else { // otherwise do nothing
             if (LOGGING) NSLog(@"%@ %@ join %d, requst to resume but running state is %d, mainThread=%d", self.class, NSStringFromSelector(_cmd), self.joinID, self.runningState, [[NSThread currentThread] isMainThread]);
     }

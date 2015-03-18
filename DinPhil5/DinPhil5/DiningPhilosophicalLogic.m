@@ -19,9 +19,11 @@
     
     // stop the previous join if possible. Otherwise start right away.
     if (self.stopJoin) {
-        [continuation copy];
+        NSLog(@"not copying now");
+//        [continuation copy];
         [self initializePhilosopherStates];
         self.stopJoin(^{
+            NSLog(@"continuation is nil: %d", continuation==nil);
             [self startAndThen:continuation];
         });
         

@@ -34,6 +34,7 @@
 }
 - (void)viewWillAppear:(BOOL)animated {
     [self.logic initializePhilosophersAndThen:^{
+        NSLog(@"finished initializing");
         [self showBusySignal:NO];
     }];
     
@@ -63,7 +64,7 @@
 - (void)restart:(id)sender {
     [self showBusySignal:YES];
     [self.logic initializePhilosophersAndThen:^{
-        NSLog(@"finished initializing after restart");
+        NSLog(@"finished initializing; after restart");
         [self showBusySignal:NO];
     }];
 }
