@@ -1,3 +1,9 @@
+## This project is not maintained
+
+See [the Chymyst project](https://github.com/Chymyst/chymyst-core) for a new implementation of join calculus in Scala.
+
+
+
 CocoaJoin
 =========
 
