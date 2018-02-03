@@ -7,6 +7,8 @@ See [the Chymyst project](https://github.com/Chymyst/chymyst-core) for a new imp
 CocoaJoin
 =========
 
+[![Join the chat at https://gitter.im/winitzki/CocoaJoin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/winitzki/CocoaJoin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 An experimental implementation of join calculus in Objective-C.
 
 Join calculus is a formal model for (mostly) purely functional, concurrent computations. Join calculus is somewhat similar to the actor model but, in some sense, is "more declarative".
